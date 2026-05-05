@@ -1,7 +1,17 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Award, Bot, Flame, Loader2, Lock, Play, Star, Zap } from "lucide-react"
+import {
+  Award,
+  Bot,
+  Flame,
+  Loader2,
+  Lock,
+  LogOut,
+  Play,
+  Star,
+  Zap,
+} from "lucide-react" // Ajout de LogOut
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -10,13 +20,20 @@ export default function MapPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Récupération du domaine via l'URL (ex: /map?domain=javascript)
   const currentDomain = searchParams.get("domain") || "javascript"
-
   const [userData, setUserData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
-  // 1. Chargement des données réelles du pilote
+  // --- FONCTION DE DÉCONNEXION ---
+  const handleLogout = () => {
+    // 1. Nettoyage des données de session locale
+    localStorage.removeItem("userId")
+    localStorage.removeItem("userName")
+
+    // 2. Redirection immédiate vers le cockpit (Login)
+    router.push("/login")
+  }
+
   useEffect(() => {
     async function fetchProfile() {
       const userId = localStorage.getItem("userId")
@@ -134,23 +151,41 @@ export default function MapPage() {
               {currentDomain.toUpperCase()} SECTOR
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Flame size={14} className="text-orange-500" />
-            <span className="text-[10px] font-bold">7 JOURS</span>
+
+          <div className="flex items-center gap-4 border-r border-white/10 pr-6 mr-2">
+            <div className="flex items-center gap-2">
+              <Flame size={14} className="text-orange-500" />
+              <span className="text-[10px] font-bold">7 JOURS</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Star size={14} className="text-yellow-400" />
+              <span className="text-[10px] font-bold">
+                {userData?.progress?.score || 0} XP
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Star size={14} className="text-yellow-400" />
-            <span className="text-[10px] font-bold">
-              {userData?.progress?.score || 0} XP
-            </span>
-          </div>
+
+          {/* --- BOUTON DÉCONNEXION --- */}
+          <button
+            onClick={handleLogout}
+            className="p-2 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 rounded-lg text-slate-500 hover:text-red-500 transition-all group"
+            title="Quitter Nexora"
+          >
+            <LogOut
+              size={18}
+              className="group-hover:-translate-x-0.5 transition-transform"
+            />
+          </button>
+
           <div className="w-10 h-10 rounded-full border-2 border-cyan-500 overflow-hidden bg-slate-800 flex items-center justify-center font-black">
             {userData?.name?.charAt(0).toUpperCase()}
           </div>
         </div>
       </nav>
 
+      {/* Le reste de ton composant (inchangé pour la structure de la carte) */}
       <div className="flex-1 flex gap-4 overflow-hidden">
+        {/* ... (Code de la carte et du profil inchangé) ... */}
         <div className="flex-[3] glass-panel relative overflow-hidden bg-slate-950/20 border border-white/5">
           <div className="absolute top-6 left-6 z-20 flex items-center gap-4">
             <div className="p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
@@ -203,11 +238,7 @@ export default function MapPage() {
                 </motion.div>
 
                 <div
-                  className={`mt-4 glass-panel p-2 min-w-[120px] transition-opacity duration-300 ${
-                    lvl.status === "available"
-                      ? "bg-[#0f172a]/80 border-cyan-500/20 opacity-100"
-                      : "bg-black/40 border-white/5 opacity-40"
-                  }`}
+                  className={`mt-4 glass-panel p-2 min-w-[120px] transition-opacity duration-300 ${lvl.status === "available" ? "bg-[#0f172a]/80 border-cyan-500/20 opacity-100" : "bg-black/40 border-white/5 opacity-40"}`}
                 >
                   <p
                     className={`text-[8px] font-black uppercase mb-1 ${lvl.status === "available" ? "text-cyan-400" : "text-slate-600"}`}
@@ -235,6 +266,7 @@ export default function MapPage() {
           </button>
         </div>
 
+        {/* --- PANNEAU DE DROITE (PROFIL) --- */}
         <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
           <div className="glass-panel p-6 bg-slate-900/40 border border-white/5">
             <div className="flex items-center gap-4 mb-6">
