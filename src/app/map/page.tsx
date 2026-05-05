@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Award, Bot, Flame, Loader2, Lock, Play, Star, Zap } from "lucide-react"
+import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -99,8 +100,15 @@ export default function MapPage() {
       <nav className="w-full h-16 glass-panel flex items-center justify-between px-8 border-b border-cyan-500/20">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-cyan-500 rounded flex items-center justify-center shadow-[0_0_15px_#22d3ee]">
-              <Zap size={18} className="text-white" />
+            <div className="w-10 h-10 rounded-lg overflow-hidden shadow-[0_0_15px_#22d3ee] border border-cyan-400/30">
+              <Image
+                src="/logo.png"
+                alt="Nexora logo"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+                priority
+              />
             </div>
             <span className="font-black tracking-tighter uppercase text-xl">
               Nexora IA
