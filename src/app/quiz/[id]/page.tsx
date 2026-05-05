@@ -65,14 +65,11 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
 
       if (data) {
         setExercise(data)
-
         const options = data.options || data.choices || []
         const correctAnswers = data.correctAnswers || data.answers || []
 
         setAvailableOptions([...options])
         setPlacedItems(new Array(correctAnswers.length).fill(""))
-
-        console.log("Exercice chargé :", { type, options, correctAnswers })
       }
     } catch (err) {
       console.error("Erreur de liaison LEO:", err)
@@ -104,7 +101,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
   }
 
   const handleSubmit = async () => {
-    if (placedItems.includes("")) return
+    if (placedItems.includes("") || placedItems.length === 0) return
 
     setIsSubmitting(true)
     const success =
@@ -165,7 +162,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
     )
 
   return (
-    <div className="min-h-screen bg-[#050810] text-white p-3 sm:p-6 flex flex-col gap-4 sm:gap-8 font-sans">
+    <div className="min-h-screen bg-[#050810] text-white p-3 sm:p-6 flex flex-col gap-4 sm:gap-8 font-sans overflow-x-hidden">
       {/* HEADER HUD */}
       <header className="flex justify-between items-center glass-panel p-3 sm:p-4 border-b-2 border-cyan-500/50">
         <div className="flex items-center gap-4">
@@ -188,67 +185,45 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
         <Bot className="text-cyan-400 animate-pulse w-6 h-6" />
       </header>
 
-      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-8">
+      <main className="flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-8 flex-1">
         {/* PANEL GAUCHE */}
-        <div className="lg:col-span-3 glass-panel p-4 sm:p-6 bg-slate-900/40 border border-white/5 flex flex-col gap-6">
-          <h2 className="text-[10px] font-black text-cyan-400 uppercase tracking-widest flex items-center gap-2 font-sans">
+        <aside className="lg:col-span-3 glass-panel p-4 sm:p-6 bg-slate-900/40 border border-white/5 flex flex-col gap-6">
+          <h2 className="text-[10px] font-black text-cyan-400 uppercase tracking-widest flex items-center gap-2">
             <Terminal size={12} /> Objectifs du Scan
           </h2>
-          <div className="p-4 bg-cyan-500/5 rounded border border-cyan-500/20 italic text-[11px] text-slate-300">
-            {exerciseCount === 2
-              ? "Joueur, analysez la question et choisissez la réponse correcte pour stabiliser le flux."
-              : "Pilote, insérez les fragments de code manquants pour restaurer le noyau."}
+          <div className="p-4 bg-cyan-500/5 rounded border border-cyan-500/20 italic text-[11px] text-slate-300 leading-relaxed">
+            {exercise.question
+              ? "Pilote, analysez la question et sélectionnez la réponse unique pour stabiliser le flux de données."
+              : "Pilote, insérez les fragments de code manquants dans les emplacements vides pour restaurer le noyau."}
           </div>
 
-        {/* CENTRE : TEXTE À TROUS */}
-        <div className="lg:col-span-9 flex flex-col gap-4 lg:gap-6">
-          <div className="glass-panel p-4 sm:p-12 bg-ui-bg border-t border-white/10 relative overflow-y-auto">
-            <div className="text-sm sm:text-lg font-mono leading-14 sm:leading-16 text-slate-300">
-              {exercise?.textWithBlanks
-                ?.split("[BLANK]")
-                .map((part: string, i: number, arr: any[]) => (
-                  <React.Fragment key={i}>
-                    {part}
-                    {i < arr.length - 1 && (
-                      <div
-                        className={`inline-block w-24 sm:w-40 h-10 sm:h-12 mx-1 sm:mx-2 translate-y-3 border-2 border-dashed rounded-lg transition-all cursor-pointer ${
-                          placedItems[i]
-                            ? "border-cyan-500 bg-cyan-500/10 shadow-[inset_0_0_10px_rgba(34,211,238,0.2)]"
-                            : "border-slate-800 bg-black/40"
-                        }`}
-                        onClick={() => {
-                          if (placedItems[i]) {
-                            const newPlaced = [...placedItems]
-                            setAvailableOptions([
-                              ...availableOptions,
-                              placedItems[i],
-                            ])
-                            newPlaced[i] = ""
-                            setPlacedItems(newPlaced)
-                          }
-                        }}
-                      >
-                        {placedItems[i] && (
-                          <motion.div
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="w-full h-full flex items-center justify-center text-[10px] font-black text-cyan-400 tracking-widest font-sans"
-                          >
-                            {placedItems[i].toUpperCase()}
-                          </motion.div>
-                        )}
-                      </div>
-                    )}
-                  </React.Fragment>
-                ))}
-            </div>
-          </div>
+          {isCorrect === false && (
+            <motion.div
+              initial={{ x: -10, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="p-4 bg-red-500/10 border border-red-500/20 rounded flex items-start gap-3"
+            >
+              <XCircle className="text-red-500 shrink-0" size={16} />
+              <div>
+                <p className="text-[10px] font-black text-red-500 uppercase mb-1">
+                  Erreur de noyau
+                </p>
+                <p className="text-[10px] text-slate-400 leading-tight">
+                  {dynamicHint ||
+                    "Réponse incorrecte. Analysez l'indice de l'IA."}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </aside>
 
-        <div className="flex-1 flex flex-col gap-6 overflow-hidden">
-          <div className="flex-1 glass-panel bg-[#0b1120]/50 border border-white/5 p-12 flex items-center justify-center overflow-y-auto relative shadow-inner">
+        {/* CENTRE : CONTENU DYNAMIQUE (QCM ou DRAG&DROP) */}
+        <section className="lg:col-span-9 flex flex-col gap-6">
+          <div className="flex-1 glass-panel bg-[#0b1120]/50 border border-white/5 p-6 sm:p-12 flex items-center justify-center relative shadow-inner min-h-[300px]">
             {exercise.question ? (
+              /* AFFICHAGE QCM */
               <div className="w-full max-w-xl flex flex-col gap-8">
-                <h3 className="text-2xl font-black italic uppercase text-cyan-400 text-center tracking-tight">
+                <h3 className="text-xl sm:text-2xl font-black italic uppercase text-cyan-400 text-center tracking-tight leading-tight">
                   {exercise.question}
                 </h3>
                 <div className="grid grid-cols-1 gap-4">
@@ -259,7 +234,11 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
                         setPlacedItems([opt])
                         setIsCorrect(null)
                       }}
-                      className={`p-5 border-2 transition-all text-left uppercase font-black text-xs tracking-widest ${placedItems[0] === opt ? "border-cyan-500 bg-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.2)]" : "border-white/5 bg-white/5 hover:bg-white/10"}`}
+                      className={`p-5 border-2 transition-all text-left uppercase font-black text-xs tracking-widest ${
+                        placedItems[0] === opt
+                          ? "border-cyan-500 bg-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+                          : "border-white/5 bg-white/5 hover:bg-white/10"
+                      }`}
                     >
                       {opt}
                     </button>
@@ -267,7 +246,8 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
                 </div>
               </div>
             ) : (
-              <div className="text-2xl font-mono leading-[5.5rem] text-slate-300 text-center">
+              /* AFFICHAGE DRAG & DROP */
+              <div className="text-sm sm:text-2xl font-mono leading-relaxed sm:leading-[5.5rem] text-slate-300 text-center">
                 {exercise?.textWithBlanks
                   ?.split("[BLANK]")
                   .map((part: string, i: number, arr: any[]) => (
@@ -275,7 +255,11 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
                       {part}
                       {i < arr.length - 1 && (
                         <div
-                          className={`inline-block min-w-[12rem] h-14 mx-3 translate-y-4 border-2 border-dashed rounded-xl transition-all cursor-pointer ${placedItems[i] ? "border-cyan-400 bg-cyan-400/10 shadow-[0_0_15px_rgba(34,211,238,0.2)]" : "border-slate-800 bg-black/40 hover:border-slate-700"}`}
+                          className={`inline-block min-w-[8rem] sm:min-w-[12rem] h-10 sm:h-14 mx-2 sm:mx-3 translate-y-2 sm:translate-y-4 border-2 border-dashed rounded-xl transition-all cursor-pointer ${
+                            placedItems[i]
+                              ? "border-cyan-400 bg-cyan-400/10 shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+                              : "border-slate-800 bg-black/40 hover:border-slate-700"
+                          }`}
                           onClick={() => {
                             if (placedItems[i]) {
                               const newPlaced = [...placedItems]
@@ -293,7 +277,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
                             <motion.div
                               initial={{ scale: 0.8, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
-                              className="w-full h-full flex items-center justify-center text-xs font-black text-cyan-400 tracking-widest uppercase px-4"
+                              className="w-full h-full flex items-center justify-center text-[10px] sm:text-xs font-black text-cyan-400 tracking-widest uppercase px-4"
                             >
                               {placedItems[i]}
                             </motion.div>
@@ -306,13 +290,14 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
             )}
           </div>
 
+          {/* DOCK OPTIONS (SEULEMENT DRAG & DROP) */}
           <AnimatePresence>
             {!exercise.question && (
               <motion.div
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 50, opacity: 0 }}
-                className="h-32 glass-panel bg-slate-900/40 border border-white/5 p-6 flex items-center gap-4 overflow-x-auto scrollbar-hide"
+                className="h-28 sm:h-32 glass-panel bg-slate-900/40 border border-white/5 p-4 sm:p-6 flex items-center gap-4 overflow-x-auto scrollbar-hide"
               >
                 {availableOptions.map((opt) => (
                   <motion.button
@@ -331,7 +316,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
                         setIsCorrect(null)
                       }
                     }}
-                    className="px-8 py-3 border border-cyan-500/30 rounded-lg bg-cyan-500/10 text-cyan-400 font-black text-[10px] tracking-widest uppercase shadow-lg transition-all"
+                    className="px-6 sm:px-8 py-3 border border-cyan-500/30 rounded-lg bg-cyan-500/10 text-cyan-400 font-black text-[10px] tracking-widest uppercase shadow-lg transition-all whitespace-nowrap"
                   >
                     {opt}
                   </motion.button>
@@ -339,48 +324,64 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </section>
       </main>
 
-      {/* FOOTER INDICE IA */}
-      <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-8 sm:right-8 sm:max-w-sm glass-panel p-4 border-l-4 border-cyan-500 bg-[#050810]/90 backdrop-blur-md">
-        <div className="flex items-start gap-4">
-          <Bot className="text-cyan-400 shrink-0" />
-          <div className="font-sans">
-            <p className="text-[10px] font-black text-cyan-400 mb-1 uppercase">
-              IA LEO : Indice
+      {/* FOOTER ACTION & HINT */}
+      <footer className="glass-panel p-4 sm:p-6 border-l-4 border-cyan-500 bg-[#050810]/90 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="flex items-start gap-4 flex-1">
+          <Bot className="text-cyan-400 shrink-0" size={24} />
+          <div>
+            <p className="text-[10px] font-black text-cyan-400 mb-1 uppercase tracking-widest">
+              IA Nexora : Communication Indice
             </p>
-            <p className="text-[10px] text-slate-400 italic leading-relaxed">
-              "{exercise?.hint}"
+            <p className="text-[11px] text-slate-400 italic leading-relaxed max-w-2xl">
+              "{exercise?.hint || "Analyse de l'environnement en cours..."}"
             </p>
           </div>
+        </div>
+
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <button
+            onClick={() => fetchExercise(exerciseCount)}
+            className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors border border-white/5"
+            title="Réinitialiser"
+          >
+            <RotateCcw size={18} />
+          </button>
 
           <button
             onClick={handleSubmit}
             disabled={
-              placedItems.includes("") || isSubmitting || isCorrect === true
+              placedItems.includes("") ||
+              isSubmitting ||
+              isCorrect === true ||
+              placedItems.length === 0
             }
-            className={`px-12 py-4 btn-cyber text-[10px] font-black uppercase shadow-[0_0_30px_rgba(34,211,238,0.2)] disabled:opacity-20 flex items-center gap-3 min-w-[220px] justify-center transition-all ${isCorrect ? "bg-green-500/20 border-green-500 text-green-400" : ""}`}
+            className={`flex-1 sm:flex-none px-12 py-4 btn-cyber text-[10px] font-black uppercase tracking-widest flex items-center gap-3 min-w-[200px] justify-center transition-all ${
+              isCorrect ? "bg-green-500/20 border-green-500 text-green-400" : ""
+            } disabled:opacity-20`}
           >
             {isSubmitting ? (
               <Loader2 className="animate-spin" size={14} />
             ) : isCorrect ? (
-              "Séquence validée"
+              "Séquence Validée"
             ) : exerciseCount === TOTAL_REQUIRED ? (
-              "Finaliser le secteur"
+              "Finaliser le Secteur"
             ) : (
-              "Vérifier la réponse"
+              "Vérifier la Réponse"
             )}
           </button>
         </div>
       </footer>
 
+      {/* MODALE DE SUCCÈS FINALE */}
       <AnimatePresence>
         {showSuccessModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="absolute inset-0 z-[100] bg-[#050810]/95 backdrop-blur-xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-[#050810]/95 backdrop-blur-xl flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -390,19 +391,12 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
               <div className="relative">
                 <motion.div
                   initial={{ scale: 0 }}
-                  animate={{
-                    scale: 1,
-                    rotate: [0, -10, 10, 0],
-                  }}
-                  transition={{
-                    duration: 0.5,
-                    ease: "easeInOut",
-                  }}
+                  animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
                   className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-[0_0_40px_#22c55e]"
                 >
-                  <LockOpen size={48} className="text-white animate-pulse" />
+                  <LockOpen size={48} className="text-white" />
                 </motion.div>
-
                 <motion.div
                   animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
                   transition={{ repeat: Infinity, duration: 2 }}
@@ -428,7 +422,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
                 </div>
                 <div className="text-center">
                   <p className="text-[8px] text-slate-500 font-black uppercase mb-1">
-                    Niveau
+                    Palier
                   </p>
                   <p className="text-2xl font-black text-white">
                     {parseInt(exerciseId) + 1}
