@@ -6,28 +6,46 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
+
 model Domain {
-  id Int @id @default(autoincrement())
-  slug String @unique // ex: 'cyber', 'marketing'
-  label String // ex: 'Cyber-Odyssée'
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  label       String
   description String?
-  users User[]
-  createdAt DateTime @default(now())
+  users       User[]
+  createdAt   DateTime @default(now())
 }
+
 model User {
-  id Int @id @default(autoincrement())
-  email String @unique
-  name String?
-  password String // On stockera le hash ici
-  answers Json? // Réponses du quiz
-  role String @default("CADET") // Pour ton univers spatial
-  // Relation avec le domaine
-  domainId Int
-  domain Domain @relation(fields: [domainId], references: [id])
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("CADET")
+  answers   Json?    // Stocke les réponses du quiz IA
+
+  // Relations
+  domainId  Int
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  progress  Progress? // Relation 1-to-1 avec la progression
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Progress {
+  id            Int      @id @default(autoincrement())
+  currentStep   Int      @default(1)
+  score         Int      @default(0)
+  completed     Boolean  @default(false)
+  lastActivity  DateTime @default(now()) @updatedAt
+
+  // Relation avec l'utilisateur
+  userId        Int      @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
