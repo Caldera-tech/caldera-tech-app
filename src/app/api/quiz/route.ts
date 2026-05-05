@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { generateDomainQuestions } from "@/lib/ia"
+import { generateDomainQuestions } from "@/lib/ai"
 
 export async function GET(req: Request) {
  const { searchParams } = new URL(req.url)

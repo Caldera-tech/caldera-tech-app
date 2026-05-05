@@ -6,23 +6,28 @@ export async function GET() {
  const domains = [
  {
  slug: "cyber",
- label: "Cyber-Odyssée",
- description: "Sécurité et infiltration",
+ label: "Cybersécurité",
+ description: "Sécurité informatique, protection des données et gestion des risques",
  },
  {
  slug: "marketing",
- label: "Influence Galactique",
- description: "Stratégie et com",
+ label: "Marketing et Communication",
+ description: "Stratégie marketing, réseaux sociaux et branding",
  },
  {
  slug: "dev",
- label: "Forge Numérique",
- description: "Développement système",
+ label: "Développement",
+ description: "Programmation, web, logiciels et systèmes",
  },
  {
- slug: "design",
- label: "Esthétique Stellaire",
- description: "Interface et UX",
+ slug: "infra",
+ label: "Infrastructure",
+ description: "Administration systèmes, cloud et services IT",
+ },
+ {
+ slug: "reseaux",
+ label: "Réseaux",
+ description: "Architecture réseau, protocoles et télécommunications",
  },
  ]
  for (const d of domains) {
