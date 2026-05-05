@@ -10,6 +10,7 @@ import {
   Mail,
   User,
 } from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -203,6 +204,15 @@ export default function RegisterPage() {
               </span>
             )}
           </button>
+
+          <div className="pt-4 text-center">
+            <Link
+              href="/login"
+              className="text-[9px] text-slate-500 hover:text-cyan-400 transition-colors uppercase font-bold tracking-widest"
+            >
+              Déjà un compte ? Se connecter
+            </Link>
+          </div>
         </form>
 
         <div className="glass-panel p-8 flex flex-col min-h-[500px] relative border-r border-white/5">

@@ -46,6 +46,11 @@ export default function SelectionPage() {
       const storedName = localStorage.getItem("userName")
       const userId = localStorage.getItem("userId")
 
+      if (!userId) {
+        router.push("/login")
+        return
+      }
+
       console.log("🛠 Debug Identité :", { userId, storedName })
 
       if (storedName) {
