@@ -17,7 +17,8 @@
     "next": "^15.5.15",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "swagger-ui-react": "^5.32.5"
+    "swagger-ui-react": "^5.32.5",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.4",
