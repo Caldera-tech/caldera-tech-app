@@ -1,16 +1,28 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: Nexora-tech-db
+    container_name: caldera-tech-db
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER manquant dans .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB manquant dans .env}
     ports:
-      - "127.0.0.1:5433:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: caldera-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@caldera.com
+      PGADMIN_DEFAULT_PASSWORD: admin_caldera
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
 
 volumes:
   postgres_data:
