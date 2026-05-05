@@ -2,7 +2,7 @@
 
 ## Objectif du projet
 
-Novanora est une plateforme d'apprentissage en ligne assistée par IA.
+Nexora est une plateforme d'apprentissage en ligne assistée par IA.
 
 Ce projet s'inscrit dans un contexte de hackathon autour de la question :
 
