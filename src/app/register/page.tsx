@@ -269,7 +269,7 @@ export default function RegisterPage() {
 
             <div className="space-y-2">
               <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
-                Présentation du Cadet
+                Présentation de l'utilisateur
               </p>
               <textarea
                 placeholder="Décrivez votre motivation spatiale..."
