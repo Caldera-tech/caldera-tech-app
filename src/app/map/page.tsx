@@ -97,9 +97,9 @@ export default function MapPage() {
 
   return (
     <div className="min-h-screen w-full bg-[#050810] text-white flex flex-col p-4 font-sans gap-4">
-      <nav className="w-full h-16 glass-panel flex items-center justify-between px-8 border-b border-cyan-500/20">
+      <nav className="w-full h-16 glass-panel flex items-center justify-between px-3 sm:px-8 border-b border-cyan-500/20">
         <div className="flex items-center gap-8">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-6">
             <div className="w-10 h-10 rounded-lg overflow-hidden shadow-[0_0_15px_#22d3ee] border border-cyan-400/30">
               <Image
                 src="/logo.png"
@@ -110,11 +110,11 @@ export default function MapPage() {
                 priority
               />
             </div>
-            <span className="font-black tracking-tighter uppercase text-xl">
+            <span className="font-black tracking-tighter uppercase text-sm sm:text-xl">
               Nexora IA
             </span>
           </div>
-          <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <div className="hidden sm:flex gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
             <span className="text-cyan-400 cursor-pointer">Carte</span>
             <span
               className="hover:text-white cursor-pointer"
@@ -125,7 +125,7 @@ export default function MapPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2 sm:gap-6">
           <div className="hidden md:flex flex-col items-end mr-4">
             <span className="text-[10px] font-black text-cyan-400">
               {userData?.name?.toUpperCase() || "CADET UNKNOWN"}
@@ -134,11 +134,11 @@ export default function MapPage() {
               {currentDomain.toUpperCase()} SECTOR
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2">
             <Flame size={14} className="text-orange-500" />
             <span className="text-[10px] font-bold">7 JOURS</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2">
             <Star size={14} className="text-yellow-400" />
             <span className="text-[10px] font-bold">
               {userData?.progress?.score || 0} XP
@@ -150,8 +150,8 @@ export default function MapPage() {
         </div>
       </nav>
 
-      <div className="flex-1 flex gap-4 overflow-hidden">
-        <div className="flex-[3] glass-panel relative overflow-hidden bg-slate-950/20 border border-white/5">
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="w-full lg:flex-3 glass-panel relative overflow-hidden bg-slate-950/20 border border-white/5 min-h-95">
           <div className="absolute top-6 left-6 z-20 flex items-center gap-4">
             <div className="p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
               <Bot className="text-cyan-400" />
@@ -235,7 +235,7 @@ export default function MapPage() {
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
+        <div className="w-full lg:flex-1 flex flex-col gap-4">
           <div className="glass-panel p-6 bg-slate-900/40 border border-white/5">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-full border-2 border-pink-500 p-1 flex items-center justify-center font-black bg-slate-800">

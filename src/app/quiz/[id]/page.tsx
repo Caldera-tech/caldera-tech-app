@@ -74,9 +74,9 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
     )
 
   return (
-    <div className="min-h-screen bg-[#050810] text-white p-6 flex flex-col gap-8 font-sans overflow-hidden">
+    <div className="min-h-screen bg-[#050810] text-white p-3 sm:p-6 flex flex-col gap-4 sm:gap-8 font-sans">
       {/* HEADER HUD */}
-      <header className="flex justify-between items-center glass-panel p-4 border-b-2 border-cyan-500/50">
+      <header className="flex justify-between items-center glass-panel p-3 sm:p-4 border-b-2 border-cyan-500/50">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
@@ -88,7 +88,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
             <h1 className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic font-sans">
               Secteur {domain.toUpperCase()} // Mission ID-{exerciseId}
             </h1>
-            <p className="text-xl font-black uppercase tracking-tighter text-white font-sans">
+            <p className="text-base sm:text-xl font-black uppercase tracking-tighter text-white font-sans">
               {exercise?.mission || "Chargement..."}
             </p>
           </div>
@@ -96,9 +96,9 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
         <Bot className="text-cyan-400 animate-pulse" />
       </header>
 
-      <div className="flex-1 grid grid-cols-12 gap-8 overflow-hidden">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-8">
         {/* PANEL GAUCHE */}
-        <div className="col-span-3 glass-panel p-6 bg-slate-900/40 border border-white/5 flex flex-col gap-6">
+        <div className="lg:col-span-3 glass-panel p-4 sm:p-6 bg-slate-900/40 border border-white/5 flex flex-col gap-6">
           <h2 className="text-[10px] font-black text-cyan-400 uppercase tracking-widest flex items-center gap-2 font-sans">
             <Terminal size={12} /> Objectifs du Scan
           </h2>
@@ -111,9 +111,9 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
         </div>
 
         {/* CENTRE : TEXTE À TROUS */}
-        <div className="col-span-9 flex flex-col gap-6 overflow-hidden">
-          <div className="flex-1 glass-panel p-12 bg-[#0b1120] border-t border-white/10 relative overflow-y-auto">
-            <div className="text-lg font-mono leading-[4rem] text-slate-300">
+        <div className="lg:col-span-9 flex flex-col gap-4 lg:gap-6">
+          <div className="glass-panel p-4 sm:p-12 bg-ui-bg border-t border-white/10 relative overflow-y-auto">
+            <div className="text-sm sm:text-lg font-mono leading-14 sm:leading-16 text-slate-300">
               {exercise?.textWithBlanks
                 ?.split("[BLANK]")
                 .map((part: string, i: number, arr: any[]) => (
@@ -121,7 +121,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
                     {part}
                     {i < arr.length - 1 && (
                       <div
-                        className={`inline-block w-40 h-12 mx-2 translate-y-3 border-2 border-dashed rounded-lg transition-all cursor-pointer ${
+                        className={`inline-block w-24 sm:w-40 h-10 sm:h-12 mx-1 sm:mx-2 translate-y-3 border-2 border-dashed rounded-lg transition-all cursor-pointer ${
                           placedItems[i]
                             ? "border-cyan-500 bg-cyan-500/10 shadow-[inset_0_0_10px_rgba(34,211,238,0.2)]"
                             : "border-slate-800 bg-black/40"
@@ -194,7 +194,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
       </div>
 
       {/* FOOTER INDICE IA */}
-      <div className="fixed bottom-8 right-8 max-w-sm glass-panel p-4 border-l-4 border-cyan-500 bg-[#050810]/90 backdrop-blur-md">
+      <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-8 sm:right-8 sm:max-w-sm glass-panel p-4 border-l-4 border-cyan-500 bg-[#050810]/90 backdrop-blur-md">
         <div className="flex items-start gap-4">
           <Bot className="text-cyan-400 shrink-0" />
           <div className="font-sans">
