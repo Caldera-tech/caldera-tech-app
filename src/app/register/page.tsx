@@ -16,7 +16,6 @@ import { useEffect, useState } from "react"
 export default function RegisterPage() {
   const router = useRouter()
 
-  // 1. États pour les données de la DB et le formulaire
   const [domains, setDomains] = useState<
     { slug: string; label: string; description?: string }[]
   >([])
@@ -24,12 +23,22 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Ajout du champ 'answers' pour le Stage 2
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    domainSlug: "", // Sera initialisé après le fetch des domaines
+    domainSlug: "",
+    answers: {
+      experience: "",
+      language: "",
+      presentation: "",
+    },
   })
+
+  const progress = Object.values(formData.answers).filter(
+    (v) => v !== "",
+  ).length
 
   function getErrorMessage(error: unknown) {
     return error instanceof Error
@@ -37,7 +46,6 @@ export default function RegisterPage() {
       : "Une erreur inconnue est survenue."
   }
 
-  // 2. Chargement des domaines au montage
   useEffect(() => {
     async function loadDomains() {
       try {
@@ -58,9 +66,12 @@ export default function RegisterPage() {
     loadDomains()
   }, [])
 
-  // 3. Logique d'envoi à la base de données
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (progress < 3) {
+      setError("Veuillez finaliser le calibrage IA (Stage 2) avant de valider.")
+      return
+    }
     setIsSubmitting(true)
     setError(null)
 
@@ -72,14 +83,10 @@ export default function RegisterPage() {
       })
 
       const result = await response.json()
+      if (!response.ok)
+        throw new Error(result.error || "Échec de l'initialisation.")
 
-      if (!response.ok) {
-        throw new Error(result.error || "Échec de l'initialisation du profil.")
-      }
-
-      // Succès ! On peut rediriger vers le quiz par exemple
-      console.log("Pilote enregistré :", result.userId)
-      router.push("/quiz") // Ou l'étape suivante de ton app
+      router.push("/map")
     } catch (err: unknown) {
       setError(getErrorMessage(err))
     } finally {
@@ -98,7 +105,7 @@ export default function RegisterPage() {
       </motion.h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-5xl relative z-10">
-        {/* STAGE 1: FORMULAIRE D'IDENTIFICATION */}
+        {/* STAGE 1: IDENTIFICATION */}
         <form
           onSubmit={handleSubmit}
           className="glass-panel p-8 space-y-6 flex flex-col border-l-2 border-l-cyan-500/50 shadow-[20px_0_50px_-20px_rgba(34,211,238,0.1)]"
@@ -110,7 +117,7 @@ export default function RegisterPage() {
 
           <div className="space-y-4">
             {error && (
-              <div className="text-[10px] bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-lg animate-bounce">
+              <div className="text-[10px] bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-lg">
                 ERREUR SYSTÈME : {error.toUpperCase()}
               </div>
             )}
@@ -199,59 +206,120 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        {/* STAGE 2: IA LEO VISUAL */}
-        <div className="glass-panel p-8 flex flex-col min-h-112.5 relative border-r border-white/5">
-          <h2 className="text-[10px] text-slate-400 font-bold tracking-[0.3em] uppercase mb-10">
+        {/* STAGE 2: CALIBRAGE IA */}
+        <div className="glass-panel p-8 flex flex-col min-h-[500px] relative border-r border-white/5">
+          <h2 className="text-[10px] text-slate-400 font-bold tracking-[0.3em] uppercase mb-8">
             Stage 2: Calibrage IA en cours
           </h2>
 
-          <div className="flex-1 flex flex-col items-center justify-center relative">
-            <div className="relative flex items-center justify-center">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                className="absolute w-40 h-40 border border-cyan-500/20 rounded-full border-dashed"
-              />
-              <motion.div
-                animate={{ rotate: -360 }}
-                transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-                className="absolute w-48 h-48 border border-cyan-500/10 rounded-full"
-              />
-              <div className="absolute inset-0 bg-cyan-500/15 blur-[45px] rounded-full" />
+          <div className="flex-1 flex flex-col gap-6 relative">
+            {/* Question Experience */}
+            <div className="space-y-3">
+              <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
+                Expérience en CSS Flexbox ?
+              </p>
+              <div className="flex gap-2">
+                {["Novateur", "Confirmé", "Expert"].map((lvl) => (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        answers: { ...formData.answers, experience: lvl },
+                      })
+                    }
+                    className={`px-3 py-1.5 rounded text-[9px] font-bold border transition-all ${
+                      formData.answers.experience === lvl
+                        ? "bg-cyan-500/20 border-cyan-400 text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.3)]"
+                        : "border-white/10 text-slate-500 hover:border-white/30"
+                    }`}
+                  >
+                    {lvl.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
 
+            {/* Question Langage */}
+            <div className="space-y-3">
+              <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
+                Langage de préférence ?
+              </p>
+              <div className="flex gap-2">
+                {["JS", "TS", "Python"].map((lang) => (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        answers: { ...formData.answers, language: lang },
+                      })
+                    }
+                    className={`px-3 py-1.5 rounded text-[9px] font-bold border transition-all ${
+                      formData.answers.language === lang
+                        ? "bg-cyan-500/20 border-cyan-400 text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.3)]"
+                        : "border-white/10 text-slate-500 hover:border-white/30"
+                    }`}
+                  >
+                    {lang.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Présentation */}
+            <div className="space-y-2">
+              <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
+                Présentation du Cadet
+              </p>
+              <textarea
+                placeholder="Décrivez votre motivation spatiale..."
+                value={formData.answers.presentation}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    answers: {
+                      ...formData.answers,
+                      presentation: e.target.value,
+                    },
+                  })
+                }
+                className="neon-input w-full text-[10px] py-3 h-24 resize-none bg-black/20"
+              />
+            </div>
+
+            {/* IA LEO Visuel Réduit */}
+            <div className="flex items-center gap-4 py-2 border-t border-white/5 mt-2">
               <motion.div
-                animate={{ y: [0, -12, 0] }}
+                animate={{ y: [0, -5, 0] }}
                 transition={{
                   duration: 4,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="relative z-10 bg-[#0f172a] p-5 rounded-3xl border border-cyan-400/30 shadow-[0_0_30px_rgba(34,211,238,0.2)]"
+                className="bg-[#0f172a] p-3 rounded-2xl border border-cyan-400/30"
               >
-                <Bot className="w-16 h-16 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
+                <Bot className="w-8 h-8 text-cyan-400" />
               </motion.div>
-
-              <div className="absolute -right-24 -top-8 z-20">
-                <div className="bg-[#0f172a]/90 border border-cyan-500/30 p-3 rounded-2xl rounded-bl-none backdrop-blur-md w-36 shadow-2xl">
-                  <p className="text-[9px] leading-relaxed">
-                    <span className="text-cyan-400 font-black block mb-1">
-                      IA LEO:
-                    </span>
-                    Répondez aux scans pour votre parcours.
-                  </p>
-                </div>
+              <div className="bg-[#0f172a]/90 border border-cyan-500/30 p-2 px-3 rounded-xl rounded-bl-none text-[9px] flex-1 backdrop-blur-md">
+                <span className="text-cyan-400 font-black block mb-0.5">
+                  IA LEO:
+                </span>
+                Répondez aux scans pour valider votre profil.
               </div>
             </div>
 
+            {/* Progress Bar Questionnaire */}
             <div className="w-full mt-auto space-y-3">
               <div className="flex justify-between text-[9px] font-black text-slate-500 uppercase tracking-widest">
-                <span>Questionnaire</span>
-                <span className="text-cyan-400">0/60</span>
+                <span>Calibrage système</span>
+                <span className="text-cyan-400">{progress}/3</span>
               </div>
               <div className="h-1.5 w-full bg-slate-950 rounded-full border border-white/5 p-0.5">
                 <motion.div
-                  initial={{ width: "5%" }}
-                  animate={{ width: isSubmitting ? "40%" : "15%" }}
+                  animate={{ width: `${(progress / 3) * 100}%` }}
                   className="h-full bg-linear-to-r from-cyan-500 to-blue-600 rounded-full shadow-[0_0_10px_#22d3ee]"
                 />
               </div>

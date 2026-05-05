@@ -1,9 +1,11 @@
-import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import bcrypt from "bcrypt" // 1. Import de bcrypt
+import bcrypt from "bcrypt"
+import { NextResponse } from "next/server"
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Une erreur inconnue est survenue."
+  return error instanceof Error
+    ? error.message
+    : "Une erreur inconnue est survenue."
 }
 
 function isPrismaUniqueError(error: unknown) {
@@ -15,93 +17,79 @@ function isPrismaUniqueError(error: unknown) {
   )
 }
 
-export async function GET() {
-  try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        answers: true,
-        createdAt: true,
-        updatedAt: true,
-        domain: {
-          select: {
-            slug: true,
-            label: true,
-            description: true,
-          },
-        },
-        progress: {
-          select: {
-            currentStep: true,
-            score: true,
-            completed: true,
-            lastActivity: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    })
-
-    return NextResponse.json({ users })
-  } catch (error: unknown) {
-    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
-  }
-}
-
 export async function POST(req: Request) {
   try {
     const body = await req.json()
     const { name, email, password, domainSlug, answers } = body
 
-    // Vérification du domaine
+    // 1. Récupération du domaine
     const domain = await prisma.domain.findUnique({
       where: { slug: domainSlug },
     })
 
     if (!domain) {
       return NextResponse.json(
-        { error: "Domaine spatial introuvable" },
+        { error: "Domaine spatial introuvable dans la base." },
         { status: 404 },
       )
     }
 
-    // 2. Hachage du mot de passe
-    // Le "10" correspond au coût de hachage (salt rounds)
+    // 2. Sécurisation du mot de passe
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // 3. Création du cadet avec le mot de passe haché
+    // 3. Création atomique (User + Progress)
+    // Cette syntaxe crée l'utilisateur ET sa progression en une seule transaction
     const newUser = await prisma.user.create({
       data: {
         name,
         email,
-        password: hashedPassword, // On utilise la version sécurisée
+        password: hashedPassword,
         domainId: domain.id,
         answers: answers || {},
-        // On initialise la progression en même temps
         progress: {
-          create: {} 
-        }
+          create: {
+            currentStep: 1,
+            score: 0,
+            completed: false,
+          },
+        },
+      },
+      include: {
+        progress: true, // On inclut la progression dans la réponse pour vérification
       },
     })
 
     return NextResponse.json(
       {
-        message: "Cadet enregistré avec succès !",
+        message: "Profil pilote initialisé avec succès !",
         userId: newUser.id,
       },
       { status: 201 },
     )
   } catch (error: unknown) {
-    // Gestion spécifique si l'email existe déjà (erreur Prisma P2002)
     if (isPrismaUniqueError(error)) {
       return NextResponse.json(
-        { error: "Cet email est déjà enregistré dans la flotte." },
-        { status: 400 }
+        { error: "Cet email est déjà utilisé par un autre pilote." },
+        { status: 400 },
       )
     }
-    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
+
+    console.error("Erreur Prisma complète:", error)
+    return NextResponse.json(
+      { error: "Échec de la base de données : " + getErrorMessage(error) },
+      { status: 500 },
+    )
+  }
+}
+
+// Optionnel : GET pour voir si les données arrivent bien
+export async function GET() {
+  try {
+    const users = await prisma.user.findMany({
+      include: { domain: true, progress: true },
+    })
+    return NextResponse.json({ users })
+  } catch (error) {
+    return NextResponse.json({ error: "Erreur lecture" }, { status: 500 })
   }
 }
