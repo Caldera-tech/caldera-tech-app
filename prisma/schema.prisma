@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -27,12 +22,12 @@ model User {
   name      String?
   password  String
   role      String   @default("CADET")
-  answers   Json?    // Stocke les réponses du quiz IA
+  answers   Json?    // Stocke les réponses d'identification (Stage 2)
 
   // Relations
   domainId  Int
   domain    Domain   @relation(fields: [domainId], references: [id])
-  progress  Progress? // Relation 1-to-1 avec la progression
+  progress  Progress?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -45,7 +40,7 @@ model Progress {
   completed     Boolean  @default(false)
   lastActivity  DateTime @default(now()) @updatedAt
 
-  // Relation avec l'utilisateur
+  // Relation 1-to-1 stricte avec l'utilisateur
   userId        Int      @unique
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
