@@ -95,11 +95,11 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-ui-bg relative overflow-hidden font-sans">
+    <div className="min-h-screen w-full flex flex-col items-center justify-start py-8 p-4 bg-ui-bg relative font-sans">
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="neon-text text-3xl md:text-4xl font-black mb-12 tracking-tight text-center uppercase"
+        className="neon-text text-2xl md:text-4xl font-black mb-6 md:mb-12 tracking-tight text-center uppercase"
       >
         Création de profil pilote
       </motion.h1>

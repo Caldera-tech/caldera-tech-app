@@ -114,9 +114,9 @@ export default function MapPage() {
 
   return (
     <div className="min-h-screen w-full bg-[#050810] text-white flex flex-col p-4 font-sans gap-4">
-      <nav className="w-full h-16 glass-panel flex items-center justify-between px-8 border-b border-cyan-500/20">
+      <nav className="w-full h-16 glass-panel flex items-center justify-between px-3 sm:px-8 border-b border-cyan-500/20">
         <div className="flex items-center gap-8">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-6">
             <div className="w-10 h-10 rounded-lg overflow-hidden shadow-[0_0_15px_#22d3ee] border border-cyan-400/30">
               <Image
                 src="/logo.png"
@@ -127,11 +127,11 @@ export default function MapPage() {
                 priority
               />
             </div>
-            <span className="font-black tracking-tighter uppercase text-xl">
+            <span className="font-black tracking-tighter uppercase text-sm sm:text-xl">
               Nexora IA
             </span>
           </div>
-          <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <div className="hidden sm:flex gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
             <span className="text-cyan-400 cursor-pointer">Carte</span>
             <span
               className="hover:text-white cursor-pointer"
@@ -142,7 +142,7 @@ export default function MapPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2 sm:gap-6">
           <div className="hidden md:flex flex-col items-end mr-4">
             <span className="text-[10px] font-black text-cyan-400">
               {userData?.name?.toUpperCase() || ""}
