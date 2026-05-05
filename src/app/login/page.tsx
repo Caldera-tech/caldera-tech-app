@@ -36,8 +36,8 @@ export default function LoginPage() {
         )
       }
 
-      // Succès : Redirection vers la carte ou le dashboard
-      router.push("/map")
+      localStorage.setItem("userId", result.user.id)
+      router.push("/selection")
     } catch (err: any) {
       setError(err.message)
     } finally {
