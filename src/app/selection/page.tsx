@@ -62,11 +62,12 @@ export default function SelectionPage() {
       const userId = localStorage.getItem("userId")
       const storedName = localStorage.getItem("userName")
 
-      // 1. Sécurité : Redirection si aucun ID trouvé
       if (!userId) {
         router.push("/login")
         return
       }
+
+      console.log("🛠 Debug Identité :", { userId, storedName })
 
       // 2. Si le nom est déjà en cache local, on l'utilise
       if (storedName) {
