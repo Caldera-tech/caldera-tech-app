@@ -22,7 +22,7 @@ model User {
   name      String?
   password  String
   xp        Int      @default(0)
-  role      String   @default("CADET")
+  role      String   @default("UTILISATEUR")
   answers   Json?    // Stocke les réponses d'identification (Stage 2)
 
   // Relations

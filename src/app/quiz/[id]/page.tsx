@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { AnimatePresence, motion } from "framer-motion"
@@ -58,12 +60,19 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
           seed: Math.random(),
         }),
       })
+
       const data = await res.json()
 
-      if (data && data.correctAnswers) {
+      if (data) {
         setExercise(data)
-        setAvailableOptions(data.options || [])
-        setPlacedItems(new Array(data.correctAnswers.length).fill(""))
+
+        const options = data.options || data.choices || []
+        const correctAnswers = data.correctAnswers || data.answers || []
+
+        setAvailableOptions([...options])
+        setPlacedItems(new Array(correctAnswers.length).fill(""))
+
+        console.log("Exercice chargé :", { type, options, correctAnswers })
       }
     } catch (err) {
       console.error("Erreur de liaison LEO:", err)
@@ -190,7 +199,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
           </h2>
           <div className="p-4 bg-cyan-500/5 rounded border border-cyan-500/20 italic text-[11px] text-slate-300">
             {exerciseCount === 2
-              ? "Cadet, analysez la question et choisissez la réponse correcte pour stabiliser le flux."
+              ? "Joueur, analysez la question et choisissez la réponse correcte pour stabiliser le flux."
               : "Pilote, insérez les fragments de code manquants pour restaurer le noyau."}
           </div>
 

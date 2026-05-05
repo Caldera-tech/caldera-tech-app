@@ -114,7 +114,7 @@ const openApiSpec = {
                   properties: {
                     message: {
                       type: "string",
-                      example: "Cadet enregistré avec succès !",
+                      example: "Utilisateur enregistré avec succès !",
                     },
                     userId: { type: "integer", example: 42 },
                   },
@@ -319,7 +319,7 @@ const openApiSpec = {
           id: { type: "integer", example: 42 },
           email: { type: "string", example: "alice@example.com" },
           name: { type: "string", example: "Alice Dupont" },
-          role: { type: "string", example: "CADET" },
+          role: { type: "string", example: "DEBUTANT" },
           answers: {
             type: "object",
             nullable: true,

@@ -243,7 +243,7 @@ export default function MapPage() {
               </div>
               <div>
                 <h2 className="text-xs font-black uppercase italic">
-                  {userData?.name || "Cadet"}
+                  {userData?.name || "Utilisateur"}
                 </h2>
                 <p className="text-[9px] text-pink-400 font-bold uppercase tracking-widest">
                   Niveau {userData?.progress?.currentStep || 1} Pilote

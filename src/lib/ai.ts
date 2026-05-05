@@ -37,23 +37,43 @@ export async function generateLevelExercise(
   const prompt =
     type === "qcm"
       ? `Nexora: Génère un QCM court sur ${domain} (${selectedTopic}).
-         RÈGLES : Question max 12 mots. Options courtes.
-         JSON : { "mission": "Nom court", "question": "Phrase courte ?", "options": [], "correctAnswers": ["Rép"], "hint": "Indice max 10 mots" }`
+         RÈGLES : Question max 12 mots.
+         JSON IMPÉRATIF :
+         {
+           "mission": "Nom",
+           "question": "Texte ?",
+           "options": ["Rép1", "Rép2", "Rép3", "Rép4"],
+           "correctAnswers": ["Rép1"],
+           "hint": "Indice"
+         }`
       : `Nexora: Génère un texte à trous court sur ${domain} (${selectedTopic}).
-         RÈGLES : Texte max 15 mots avec 2 [BLANK].
-         JSON : { "mission": "Nom court", "textWithBlanks": "Code [BLANK] texte [BLANK]", "options": [], "correctAnswers": [], "hint": "Indice max 10 mots" }`
+         RÈGLES : Texte max 15 mots avec 2 marqueurs [BLANK].
+         JSON IMPÉRATIF :
+         {
+           "mission": "Nom",
+           "textWithBlanks": "Texte [BLANK] suite [BLANK]",
+           "options": ["Mot1", "Mot2", "Faux1", "Faux2"],
+           "correctAnswers": ["Mot1", "Mot2"],
+           "hint": "Indice"
+         }`
 
   const completion = await groq.chat.completions.create({
     messages: [{ role: "user", content: prompt }],
     model: "llama-3.3-70b-versatile",
     response_format: { type: "json_object" },
-    temperature: 0.8,
+    temperature: 0.7,
   })
 
   const content = completion.choices[0]?.message?.content
   if (!content) throw new Error("Réponse IA vide")
 
-  return JSON.parse(content)
+  const parsed = JSON.parse(content)
+
+  if (!parsed.options || parsed.options.length === 0) {
+    parsed.options = parsed.correctAnswers || []
+  }
+
+  return parsed
 }
 
 export async function generateDynamicHint(
@@ -61,7 +81,7 @@ export async function generateDynamicHint(
   mission: string,
   currentWrongAnswers: string[],
 ) {
-  const prompt = `Nexora: Le cadet a échoué à "${mission}" sur ${domain}.
+  const prompt = `Nexora: Le joueur a échoué à "${mission}" sur ${domain}.
   Rép incorrectes: ${JSON.stringify(currentWrongAnswers)}.
   Donne un indice de maximum 10 mots. Ton spatial.`
 
