@@ -1,15 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import {
-  Bot,
-  Database,
-  Layout,
-  Palette,
-  Shield,
-  Terminal,
-  Zap,
-} from "lucide-react"
+import { Bot, Database, Layout, Palette, Terminal, Zap } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -20,7 +12,6 @@ const MISSIONS = [
     title: "Structure",
     icon: Layout,
     color: "#f97316",
-    shadow: "shadow-orange-500/20",
   },
   {
     id: "css",
@@ -28,7 +19,6 @@ const MISSIONS = [
     title: "Interface",
     icon: Palette,
     color: "#3b82f6",
-    shadow: "shadow-blue-500/20",
   },
   {
     id: "javascript",
@@ -36,7 +26,6 @@ const MISSIONS = [
     title: "Protocoles",
     icon: Zap,
     color: "#eab308",
-    shadow: "shadow-yellow-500/20",
   },
   {
     id: "php",
@@ -44,49 +33,49 @@ const MISSIONS = [
     title: "Serveur",
     icon: Database,
     color: "#6366f1",
-    shadow: "shadow-indigo-500/20",
   },
 ]
 
 export default function SelectionPage() {
   const router = useRouter()
-  const [userName, setUserName] = useState<string>("CADET")
+  const [userName, setUserName] = useState<string>("")
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const loadUserIdentity = () => {
+      // 1. Vérification PRIORITAIRE dans le localStorage
+      const storedName = localStorage.getItem("userName")
       const userId = localStorage.getItem("userId")
-      if (!userId) return
 
-      try {
-        // Tentative de récupération via l'API (recommandé)
-        const res = await fetch(`/api/user/progress?userId=${userId}`)
-        const data = await res.json()
+      console.log("🛠 Debug Identité :", { userId, storedName })
 
-        // On cherche le nom dans l'objet user retourné par l'API
-        if (data.updated && data.updated.user && data.updated.user.name) {
-          setUserName(data.updated.user.name.toUpperCase())
-        } else {
-          // Fallback : Si l'API ne renvoie pas le nom, on regarde le localStorage
-          const storedName = localStorage.getItem("userName")
-          if (storedName) setUserName(storedName.toUpperCase())
-        }
-      } catch (err) {
-        const storedName = localStorage.getItem("userName")
-        if (storedName) setUserName(storedName.toUpperCase())
+      if (storedName) {
+        setUserName(storedName.toUpperCase())
+      } else if (userId) {
+        // 2. Si on a l'ID mais pas le nom, on tente un fetch rapide
+        fetch(`/api/user/profile?userId=${userId}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.name) {
+              setUserName(data.name.toUpperCase())
+              localStorage.setItem("userName", data.name) // On le sauve pour la prochaine fois
+            }
+          })
+          .catch((err) => console.error("Erreur Fetch Nom:", err))
       }
     }
 
-    fetchUser()
+    loadUserIdentity()
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans text-white">
+      {/* Background Grid */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20" />
 
       <div className="relative z-10 w-full max-w-6xl">
         <div className="flex justify-between items-end mb-12 px-4 border-b border-white/5 pb-6">
           <div>
-            <h1 className="text-4xl font-black uppercase tracking-tighter italic text-white flex items-center gap-4">
+            <h1 className="text-4xl font-black uppercase tracking-tighter italic flex items-center gap-4">
               <Terminal className="text-cyan-400 w-8 h-8" />
               Sélecteur de Mission
             </h1>
@@ -96,98 +85,50 @@ export default function SelectionPage() {
               Choisissez un secteur d'opération
             </p>
           </div>
-          <div className="hidden md:flex gap-4 items-center">
-            <div className="text-right">
-              <p className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">
-                IA Nexora : Online
-              </p>
-              <p className="text-[8px] text-slate-600 uppercase font-bold">
-                Signal stable 100%
-              </p>
-            </div>
-            <Bot className="w-10 h-10 text-cyan-500/50 animate-pulse" />
-          </div>
+          <Bot className="w-10 h-10 text-cyan-500/50 animate-pulse hidden md:block" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-[60vh]">
           {MISSIONS.map((mission, index) => (
             <motion.div
               key={mission.id}
-              initial={{ opacity: 0, y: 50 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              whileHover={{ scale: 1.02, zIndex: 50 }}
+              transition={{ delay: index * 0.1 }}
               onClick={() => router.push(`/map?domain=${mission.id}`)}
               className="group relative cursor-pointer"
             >
-              <div
-                className={`absolute inset-0 rounded-2xl blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`}
-                style={{ backgroundColor: mission.color }}
-              />
-
-              <div
-                className={`h-full glass-panel relative overflow-hidden flex flex-col items-center justify-between p-8 border-b-4 transition-all duration-300 border-white/5`}
-                style={{ borderBottomColor: mission.color + "44" }}
-              >
-                <span className="text-[10px] font-black text-slate-500 group-hover:text-white transition-colors tracking-[0.3em]">
+              <div className="h-full glass-panel relative overflow-hidden flex flex-col items-center justify-between p-8 border-b-4 border-white/5 group-hover:border-white transition-all">
+                <span className="text-[10px] font-black text-slate-500 group-hover:text-white tracking-[0.3em]">
                   {mission.label}
                 </span>
-
-                <div className="relative">
-                  <mission.icon
-                    size={64}
-                    className="transition-all duration-500 transform group-hover:scale-125"
-                    style={{ color: mission.color }}
-                  />
-                  <div
-                    className="absolute inset-0 blur-xl opacity-0 group-hover:opacity-50 transition-opacity"
-                    style={{ backgroundColor: mission.color }}
-                  />
-                </div>
-
+                <mission.icon
+                  size={64}
+                  style={{ color: mission.color }}
+                  className="group-hover:scale-110 transition-transform"
+                />
                 <div className="text-center w-full">
-                  <h2 className="text-2xl font-black uppercase tracking-tighter mb-2 group-hover:text-white transition-all">
+                  <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">
                     {mission.title}
                   </h2>
-                  <div className="h-0.5 w-full bg-white/5 relative overflow-hidden">
-                    <motion.div
-                      className="absolute inset-0 opacity-50"
+                  <div className="h-0.5 w-full bg-white/5 overflow-hidden">
+                    <div
+                      className="h-full w-1/3 group-hover:w-full transition-all duration-700"
                       style={{ backgroundColor: mission.color }}
-                      initial={{ x: "-100%" }}
-                      whileHover={{ x: "100%" }}
-                      transition={{ duration: 1, repeat: Infinity }}
                     />
                   </div>
-                  <p className="text-[9px] font-bold text-slate-600 mt-4 uppercase tracking-widest group-hover:text-white transition-colors">
-                    Initialiser la séquence
-                  </p>
                 </div>
-
-                <div className="absolute top-2 left-2 w-2 h-2 border-t border-l border-white/20 group-hover:border-white/50" />
-                <div className="absolute bottom-2 right-2 w-2 h-2 border-b border-r border-white/20 group-hover:border-white/50" />
               </div>
             </motion.div>
           ))}
         </div>
 
-        <div className="mt-12 flex justify-between items-center px-4">
-          <div className="flex gap-6 items-center">
-            <div className="flex items-center gap-2">
-              <Shield className="w-3 h-3 text-green-500" />
-              <span className="text-[8px] font-black uppercase text-slate-500">
-                Pare-feu actif
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-3 h-3 text-cyan-500" />
-              <span className="text-[8px] font-black uppercase text-slate-500">
-                Moteur IA Optimisé
-              </span>
-            </div>
+        <div className="mt-12 flex justify-between items-center text-[8px] font-black text-slate-700 uppercase tracking-[0.5em]">
+          <div className="flex gap-4">
+            <span className="text-green-500">Pare-feu actif</span>
+            <span className="text-cyan-500">Moteur IA Optimisé</span>
           </div>
-          <p className="text-[8px] font-black text-slate-700 tracking-[0.5em] uppercase">
-            Nexora Operating System v.2.6
-          </p>
+          <span>Nexora OS v.2.6</span>
         </div>
       </div>
     </div>

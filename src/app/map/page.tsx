@@ -128,7 +128,7 @@ export default function MapPage() {
         <div className="flex items-center gap-6">
           <div className="hidden md:flex flex-col items-end mr-4">
             <span className="text-[10px] font-black text-cyan-400">
-              {userData?.name?.toUpperCase() || "CADET UNKNOWN"}
+              {userData?.name?.toUpperCase() || ""}
             </span>
             <span className="text-[8px] text-slate-500 uppercase tracking-widest font-bold">
               {currentDomain.toUpperCase()} SECTOR
@@ -161,7 +161,7 @@ export default function MapPage() {
                 Apprendre le {currentDomain}
               </h1>
               <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">
-                Cadet {userData?.name}, votre progression est synchronisée.
+                {userData?.name}, votre progression est synchronisée.
               </p>
             </div>
           </div>
