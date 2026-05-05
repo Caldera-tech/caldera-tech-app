@@ -28,37 +28,56 @@ omplexes).
   return content ? JSON.parse(content).questions || JSON.parse(content) : []
 }
 
-export async function generateLevelExercise(domain: string, level: number) {
-  const prompt = `Tu es l'IA de bord LEO. Génère un exercice technique pour un cadet en "${domain}", Niveau ${level}.
-  Tu dois fournir 3 types de défis au format JSON strict.
+export async function generateLevelExercise(domain: string, level: string) {
+  const prompt = `Tu es l'IA LEO. Génère un exercice de type "Drag and Drop" pour le domaine ${domain}, niveau ${level}.
 
-  CONSIGNES :
-  - Thème : Spatial/Futuriste.
-  - Structure JSON attendue :
+  RÈGLES STRICTES :
+  - Retourne UNIQUEMENT un objet JSON.
+  - Pas de texte avant, pas de texte après.
+  - "textWithBlanks" doit contenir des marqueurs [BLANK].
+  - "options" doit contenir toutes les bonnes réponses + 2 leurres.
+
+  STRUCTURE JSON :
   {
-    "qcm": {
-      "question": "Texte de la question",
-      "options": ["Choix 1", "Choix 2", "Choix 3"],
-      "answer": "Choix exact"
-    },
-    "coding": {
-      "title": "Texte à trous",
-      "code": "La ligne de code avec ____ pour le mot manquant",
-      "solution": "Le mot exact"
-    },
-    "theory": {
-      "question": "Question ouverte courte",
-      "hint": "Un indice spatial"
-    }
-  }
-  - Réponds UNIQUEMENT le JSON.`
+    "mission": "Nom de la mission",
+    "textWithBlanks": "Le code <[BLANK]> sert à [BLANK].",
+    "options": ["html", "structurer", "div", "css"],
+    "correctAnswers": ["html", "structurer"],
+    "hint": "Un indice court."
+  }`
 
-  const chatCompletion = await groq.chat.completions.create({
+  const completion = await groq.chat.completions.create({
+    messages: [{ role: "user", content: prompt }],
+    model: "llama-3.3-70b-versatile",
+    // Force le mode JSON
+    response_format: { type: "json_object" },
+  })
+
+  const content = completion.choices[0]?.message?.content
+  if (!content) throw new Error("Réponse IA vide")
+
+  return JSON.parse(content)
+}
+
+export async function generateDragAndDropExercise(
+  domain: string,
+  level: number,
+) {
+  const prompt = `Tu es l'IA Nexora. Génère un exercice de type "texte à trous" pour le domaine ${domain}, niveau ${level}.
+  Format JSON strict :
+  {
+    "mission": "Nom court",
+    "textWithBlanks": "Le texte avec des [BLANK] à l'intérieur",
+    "options": ["mot1", "mot2", "mot3"], // Inclure les bonnes réponses + des leurres
+    "correctAnswers": ["mot1", "mot2"], // Dans l'ordre des trous
+    "hint": "Indice de Nexora"
+  }`
+
+  const completion = await groq.chat.completions.create({
     messages: [{ role: "user", content: prompt }],
     model: "llama-3.3-70b-versatile",
     response_format: { type: "json_object" },
   })
 
-  const content = chatCompletion.choices[0]?.message?.content
-  return content ? JSON.parse(content) : null
+  return JSON.parse(completion.choices[0]?.message?.content || "{}")
 }

@@ -301,7 +301,7 @@ export default function RegisterPage() {
               </motion.div>
               <div className="bg-[#0f172a]/90 border border-cyan-500/30 p-2 px-3 rounded-xl rounded-bl-none text-[9px] flex-1 backdrop-blur-md">
                 <span className="text-cyan-400 font-black block mb-0.5">
-                  IA LEO:
+                  IA Nexora:
                 </span>
                 Répondez aux scans pour valider votre profil.
               </div>

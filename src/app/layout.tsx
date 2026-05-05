@@ -4,7 +4,7 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "Caldera Tech - Fleet Academy",
+  title: "Nexora Tech - ",
   description: "Recrutement de la prochaine génération de cadets spatiaux",
 }
 

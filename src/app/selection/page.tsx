@@ -69,7 +69,7 @@ export default function SelectionPage() {
           <div className="hidden md:flex gap-4 items-center">
             <div className="text-right">
               <p className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">
-                IA LEO : Online
+                IA Nexora : Online
               </p>
               <p className="text-[8px] text-slate-600 uppercase font-bold">
                 Signal stable 100%
@@ -155,7 +155,7 @@ export default function SelectionPage() {
             </div>
           </div>
           <p className="text-[8px] font-black text-slate-700 tracking-[0.5em] uppercase">
-            Caldera Operating System v.2.6
+            Nexora Operating System v.2.6
           </p>
         </div>
       </div>
