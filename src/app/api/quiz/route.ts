@@ -17,8 +17,17 @@ export async function POST(req: Request) {
     const { domain, level } = await req.json()
     const exercise = await generateLevelExercise(domain, level)
 
+    // Vérification de la structure minimale requise
+    if (!exercise.textWithBlanks || !exercise.correctAnswers) {
+      throw new Error("Structure JSON incomplète")
+    }
+
     return NextResponse.json(exercise)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error("Erreur API Quiz:", error.message)
+    return NextResponse.json(
+      { error: "Format de données invalide", details: error.message },
+      { status: 500 },
+    )
   }
 }

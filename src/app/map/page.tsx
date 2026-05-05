@@ -103,7 +103,7 @@ export default function MapPage() {
               <Zap size={18} className="text-white" />
             </div>
             <span className="font-black tracking-tighter uppercase text-xl">
-              Caldera IA
+              Nexora IA
             </span>
           </div>
           <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest text-slate-400">

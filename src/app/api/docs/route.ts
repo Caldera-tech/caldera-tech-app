@@ -3,10 +3,10 @@ import { NextResponse } from "next/server"
 const openApiSpec = {
   openapi: "3.0.0",
   info: {
-    title: "Caldera Tech API",
+    title: "Nexora Tech API",
     version: "1.0.0",
     description:
-      "Documentation des endpoints de l'application Caldera Tech — inscription, quiz IA et initialisation des domaines.",
+      "Documentation des endpoints de l'application Nexora Tech — inscription, quiz IA et initialisation des domaines.",
   },
   servers: [
     {
