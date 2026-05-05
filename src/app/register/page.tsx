@@ -86,7 +86,7 @@ export default function RegisterPage() {
       if (!response.ok)
         throw new Error(result.error || "Échec de l'initialisation.")
 
-      router.push("/map")
+      router.push("/login")
     } catch (err: unknown) {
       setError(getErrorMessage(err))
     } finally {
@@ -105,7 +105,6 @@ export default function RegisterPage() {
       </motion.h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-5xl relative z-10">
-        {/* STAGE 1: IDENTIFICATION */}
         <form
           onSubmit={handleSubmit}
           className="glass-panel p-8 space-y-6 flex flex-col border-l-2 border-l-cyan-500/50 shadow-[20px_0_50px_-20px_rgba(34,211,238,0.1)]"
@@ -206,7 +205,6 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        {/* STAGE 2: CALIBRAGE IA */}
         <div className="glass-panel p-8 flex flex-col min-h-[500px] relative border-r border-white/5">
           <h2 className="text-[10px] text-slate-400 font-bold tracking-[0.3em] uppercase mb-8">
             Stage 2: Calibrage IA en cours
@@ -269,7 +267,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Présentation */}
             <div className="space-y-2">
               <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
                 Présentation du Cadet
@@ -290,7 +287,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* IA LEO Visuel Réduit */}
             <div className="flex items-center gap-4 py-2 border-t border-white/5 mt-2">
               <motion.div
                 animate={{ y: [0, -5, 0] }}
@@ -311,7 +307,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Progress Bar Questionnaire */}
             <div className="w-full mt-auto space-y-3">
               <div className="flex justify-between text-[9px] font-black text-slate-500 uppercase tracking-widest">
                 <span>Calibrage système</span>

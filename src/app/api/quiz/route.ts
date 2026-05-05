@@ -1,13 +1,24 @@
+import { generateDomainQuestions, generateLevelExercise } from "@/lib/ai"
 import { NextResponse } from "next/server"
-import { generateDomainQuestions } from "@/lib/ai"
 
 export async function GET(req: Request) {
- const { searchParams } = new URL(req.url)
- const domain = searchParams.get("domain") || "Développement"
- try {
- const questions = await generateDomainQuestions(domain)
- return NextResponse.json({ questions })
- } catch (error: any) {
- return NextResponse.json({ error: error.message }, { status: 500 })
- }
+  const { searchParams } = new URL(req.url)
+  const domain = searchParams.get("domain") || "Développement"
+  try {
+    const questions = await generateDomainQuestions(domain)
+    return NextResponse.json({ questions })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const { domain, level } = await req.json()
+    const exercise = await generateLevelExercise(domain, level)
+
+    return NextResponse.json(exercise)
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
 }
