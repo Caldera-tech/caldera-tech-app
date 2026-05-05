@@ -1,3 +1,4 @@
+import logger from "@/lib/logger"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcrypt"
 import { NextResponse } from "next/server"
@@ -22,23 +23,24 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { name, email, password, domainSlug, answers } = body
 
-    // 1. Récupération du domaine
     const domain = await prisma.domain.findUnique({
       where: { slug: domainSlug },
     })
 
     if (!domain) {
+      logger.warn({
+        event: "REGISTER_INVALID_DOMAIN",
+        domainSlug,
+        message: `Tentative d'inscription sur un domaine inexistant : ${domainSlug}`,
+      })
       return NextResponse.json(
         { error: "Domaine spatial introuvable dans la base." },
         { status: 404 },
       )
     }
 
-    // 2. Sécurisation du mot de passe
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // 3. Création atomique (User + Progress)
-    // Cette syntaxe crée l'utilisateur ET sa progression en une seule transaction
     const newUser = await prisma.user.create({
       data: {
         name,
@@ -55,8 +57,16 @@ export async function POST(req: Request) {
         },
       },
       include: {
-        progress: true, // On inclut la progression dans la réponse pour vérification
+        progress: true,
       },
+    })
+
+    logger.info({
+      event: "USER_REGISTERED",
+      userId: newUser.id,
+      email: newUser.email,
+      domain: domainSlug,
+      message: `Nouveau pilote enregistré : ${newUser.name} identifié dans le secteur ${domainSlug}.`,
     })
 
     return NextResponse.json(
@@ -68,13 +78,21 @@ export async function POST(req: Request) {
     )
   } catch (error: unknown) {
     if (isPrismaUniqueError(error)) {
+      logger.warn({
+        event: "REGISTER_DUPLICATE_EMAIL",
+        message: `Tentative d'inscription avec un email déjà existant.`,
+      })
       return NextResponse.json(
         { error: "Cet email est déjà utilisé par un autre pilote." },
         { status: 400 },
       )
     }
 
-    console.error("Erreur Prisma complète:", error)
+    logger.error({
+      event: "REGISTER_SYSTEM_ERROR",
+      error: getErrorMessage(error),
+    })
+
     return NextResponse.json(
       { error: "Échec de la base de données : " + getErrorMessage(error) },
       { status: 500 },
@@ -82,7 +100,6 @@ export async function POST(req: Request) {
   }
 }
 
-// Optionnel : GET pour voir si les données arrivent bien
 export async function GET() {
   try {
     const users = await prisma.user.findMany({

@@ -1,0 +1,1 @@
+{"email":"johndoe@mail.com","event":"AUTH_FAILED_WRONG_PASSWORD","level":"warn","message":"Échec d'authentification (mot de passe invalide) pour le pilote john doe.","timestamp":"2026-05-05 17:25:40","userId":2}
