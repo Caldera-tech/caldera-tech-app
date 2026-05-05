@@ -16,11 +16,51 @@ const openApiSpec = {
   ],
   tags: [
     { name: "Auth", description: "Inscription et authentification" },
+    { name: "Domain", description: "Récupération des domaines disponibles" },
     { name: "Quiz", description: "Génération de questions par domaine via IA" },
     { name: "Setup", description: "Initialisation des données" },
   ],
   paths: {
     "/register": {
+      get: {
+        tags: ["Auth"],
+        summary: "Lister les utilisateurs enregistrés",
+        description:
+          "Retourne les utilisateurs enregistrés avec leur domaine et leur progression, sans exposer les mots de passe.",
+        responses: {
+          "200": {
+            description: "Utilisateurs récupérés avec succès",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    users: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/RegisteredUser",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "500": {
+            description: "Erreur serveur interne",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       post: {
         tags: ["Auth"],
         summary: "Inscrire un nouvel utilisateur",
@@ -120,6 +160,47 @@ const openApiSpec = {
         },
       },
     },
+    "/domain": {
+      get: {
+        tags: ["Domain"],
+        summary: "Lister les domaines disponibles",
+        description:
+          "Retourne les domaines enregistrés en base pour alimenter un dropdown ou un sélecteur de domaine.",
+        responses: {
+          "200": {
+            description: "Domaines récupérés avec succès",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    domains: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/Domain",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "500": {
+            description: "Erreur serveur interne",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     "/quiz": {
       get: {
         tags: ["Quiz"],
@@ -211,7 +292,6 @@ const openApiSpec = {
       Domain: {
         type: "object",
         properties: {
-          id: { type: "integer", example: 1 },
           slug: { type: "string", example: "dev" },
           label: { type: "string", example: "Développement" },
           description: {
@@ -220,14 +300,49 @@ const openApiSpec = {
           },
         },
       },
-      User: {
+      Progress: {
+        type: "object",
+        properties: {
+          currentStep: { type: "integer", example: 1 },
+          score: { type: "integer", example: 0 },
+          completed: { type: "boolean", example: false },
+          lastActivity: {
+            type: "string",
+            format: "date-time",
+            example: "2026-05-05T10:00:00.000Z",
+          },
+        },
+      },
+      RegisteredUser: {
         type: "object",
         properties: {
           id: { type: "integer", example: 42 },
           email: { type: "string", example: "alice@example.com" },
           name: { type: "string", example: "Alice Dupont" },
           role: { type: "string", example: "CADET" },
-          domainId: { type: "integer", example: 1 },
+          answers: {
+            type: "object",
+            nullable: true,
+            additionalProperties: true,
+            example: { q1: "a", q2: "c" },
+          },
+          createdAt: {
+            type: "string",
+            format: "date-time",
+            example: "2026-05-05T10:00:00.000Z",
+          },
+          updatedAt: {
+            type: "string",
+            format: "date-time",
+            example: "2026-05-05T10:00:00.000Z",
+          },
+          domain: {
+            $ref: "#/components/schemas/Domain",
+          },
+          progress: {
+            allOf: [{ $ref: "#/components/schemas/Progress" }],
+            nullable: true,
+          },
         },
       },
     },

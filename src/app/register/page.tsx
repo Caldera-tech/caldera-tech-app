@@ -18,7 +18,7 @@ export default function RegisterPage() {
 
   // 1. États pour les données de la DB et le formulaire
   const [domains, setDomains] = useState<
-    { id: number; slug: string; label: string }[]
+    { slug: string; label: string; description?: string }[]
   >([])
   const [isLoadingDomains, setIsLoadingDomains] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -31,15 +31,23 @@ export default function RegisterPage() {
     domainSlug: "", // Sera initialisé après le fetch des domaines
   })
 
+  function getErrorMessage(error: unknown) {
+    return error instanceof Error
+      ? error.message
+      : "Une erreur inconnue est survenue."
+  }
+
   // 2. Chargement des domaines au montage
   useEffect(() => {
     async function loadDomains() {
       try {
-        const res = await fetch("/api/domains")
+        const res = await fetch("/api/domain")
         const data = await res.json()
-        setDomains(data)
-        if (data.length > 0) {
-          setFormData((prev) => ({ ...prev, domainSlug: data[0].slug }))
+        const domainList = Array.isArray(data?.domains) ? data.domains : []
+
+        setDomains(domainList)
+        if (domainList.length > 0) {
+          setFormData((prev) => ({ ...prev, domainSlug: domainList[0].slug }))
         }
       } catch (err) {
         console.error("Erreur chargement domaines:", err)
@@ -72,15 +80,15 @@ export default function RegisterPage() {
       // Succès ! On peut rediriger vers le quiz par exemple
       console.log("Pilote enregistré :", result.userId)
       router.push("/quiz") // Ou l'étape suivante de ton app
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-[#0b1120] relative overflow-hidden font-sans">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-ui-bg relative overflow-hidden font-sans">
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -164,7 +172,7 @@ export default function RegisterPage() {
                     <option>SÉCURISATION DU CANAL...</option>
                   ) : (
                     domains.map((domain) => (
-                      <option key={domain.id} value={domain.slug}>
+                      <option key={domain.slug} value={domain.slug}>
                         {domain.label.toUpperCase()}
                       </option>
                     ))
@@ -192,7 +200,7 @@ export default function RegisterPage() {
         </form>
 
         {/* STAGE 2: IA LEO VISUAL */}
-        <div className="glass-panel p-8 flex flex-col min-h-[450px] relative border-r border-white/5">
+        <div className="glass-panel p-8 flex flex-col min-h-112.5 relative border-r border-white/5">
           <h2 className="text-[10px] text-slate-400 font-bold tracking-[0.3em] uppercase mb-10">
             Stage 2: Calibrage IA en cours
           </h2>
@@ -240,7 +248,7 @@ export default function RegisterPage() {
                 <span>Questionnaire</span>
                 <span className="text-cyan-400">0/60</span>
               </div>
-              <div className="h-1.5 w-full bg-slate-950 rounded-full border border-white/5 p-[2px]">
+              <div className="h-1.5 w-full bg-slate-950 rounded-full border border-white/5 p-0.5">
                 <motion.div
                   initial={{ width: "5%" }}
                   animate={{ width: isSubmitting ? "40%" : "15%" }}
