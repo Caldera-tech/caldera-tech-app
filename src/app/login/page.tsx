@@ -4,12 +4,18 @@ import { motion } from "framer-motion"
 import { ChevronRight, Loader2, Lock, Mail, ShieldCheck } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function LoginPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (localStorage.getItem("userId")) {
+      router.replace("/selection")
+    }
+  }, [router])
 
   const [credentials, setCredentials] = useState({
     email: "",
