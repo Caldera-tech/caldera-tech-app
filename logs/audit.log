@@ -12,3 +12,12 @@
 {"event":"AUTH_SYSTEM_ERROR","level":"error","message":"\nInvalid `prisma.user.findUnique()` invocation:\n\n\nCan't reach database server at `10.10.1.10:5433`\n\nPlease make sure your database server is running at `10.10.1.10:5433`.","timestamp":"2026-05-05 19:32:44"}
 {"email":"johndoe@mail.com","event":"AUTH_FAILED_WRONG_PASSWORD","level":"warn","message":"Échec d'authentification (mot de passe invalide) pour le pilote john.","timestamp":"2026-05-05 19:35:18","userId":1}
 {"email":"johndoe@mail.com","event":"AUTH_LOGIN_SUCCESS","level":"info","message":"Pilote john connecté avec succès.","timestamp":"2026-05-05 19:35:24","userId":1}
+{"event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape. +50 XP ajoutés.","newTotalXp":700,"reachedStep":2,"timestamp":"2026-05-05 20:17:58","userId":1,"xpGained":50}
+{"event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape. +50 XP ajoutés.","newTotalXp":750,"reachedStep":2,"timestamp":"2026-05-05 20:22:55","userId":1,"xpGained":50}
+{"event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape. +50 XP ajoutés.","newTotalXp":800,"reachedStep":2,"timestamp":"2026-05-05 20:23:05","userId":1,"xpGained":50}
+{"event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape. +150 XP ajoutés.","newTotalXp":950,"reachedStep":3,"timestamp":"2026-05-05 20:23:18","userId":1,"xpGained":150}
+{"event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape. +50 XP ajoutés.","newTotalXp":1000,"reachedStep":3,"timestamp":"2026-05-05 20:26:35","userId":1,"xpGained":50}
+{"email":"johndoe@mail.com","event":"AUTH_LOGIN_SUCCESS","level":"info","message":"Pilote john connecté avec succès.","timestamp":"2026-05-05 21:09:51","userId":1}
+{"event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape. +50 XP ajoutés. Nouveau step: 3.","newTotalXp":1050,"reachedStep":3,"timestamp":"2026-05-05 21:10:32","userId":1,"xpGained":50}
+{"event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape. +50 XP ajoutés. Nouveau step: 3.","newTotalXp":1100,"reachedStep":3,"timestamp":"2026-05-05 21:10:41","userId":1,"xpGained":50}
+{"event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape. +150 XP ajoutés. Nouveau step: 4.","newTotalXp":1250,"reachedStep":4,"timestamp":"2026-05-05 21:10:48","userId":1,"xpGained":150}

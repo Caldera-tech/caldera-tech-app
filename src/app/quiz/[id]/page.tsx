@@ -6,37 +6,37 @@ import { AnimatePresence, motion } from "framer-motion"
 import {
   ArrowRight,
   Bot,
+  CheckCircle2,
   ChevronLeft,
+  Cpu,
+  HelpCircle,
+  Info,
   Loader2,
-  LockOpen,
   RotateCcw,
+  ShieldCheck,
+  Sparkles,
   Terminal,
-  XCircle,
 } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import * as React from "react"
 import { useEffect, useState } from "react"
 
-interface QuizPageProps {
+export default function NexoraMultiWindowQuiz({
+  params,
+}: {
   params: Promise<{ id: string }>
-}
-
-export default function DragDropQuiz({ params }: QuizPageProps) {
+}) {
   const resolvedParams = React.use(params)
   const exerciseId = resolvedParams.id
-
   const searchParams = useSearchParams()
   const router = useRouter()
   const domain = searchParams.get("domain") || "html"
 
   const [exercise, setExercise] = useState<any>(null)
-  const [placedItems, setPlacedItems] = useState<string[]>([])
-  const [availableOptions, setAvailableOptions] = useState<string[]>([])
+  const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [dynamicHint, setDynamicHint] = useState<string>("")
-
   const [exerciseCount, setExerciseCount] = useState(1)
   const TOTAL_REQUIRED = 3
   const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -44,11 +44,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
   const fetchExercise = async (count: number) => {
     setLoading(true)
     setIsCorrect(null)
-    setPlacedItems([])
-    setDynamicHint("")
-
-    const type = count === 2 ? "qcm" : "drag-drop"
-
+    setSelectedOption(null)
     try {
       const res = await fetch("/api/quiz", {
         method: "POST",
@@ -56,23 +52,14 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
         body: JSON.stringify({
           domain,
           level: exerciseId,
-          type,
+          type: "qcm",
           seed: Math.random(),
         }),
       })
-
       const data = await res.json()
-
-      if (data) {
-        setExercise(data)
-        const options = data.options || data.choices || []
-        const correctAnswers = data.correctAnswers || data.answers || []
-
-        setAvailableOptions([...options])
-        setPlacedItems(new Array(correctAnswers.length).fill(""))
-      }
+      if (data) setExercise(data)
     } catch (err) {
-      console.error("Erreur de liaison LEO:", err)
+      console.error("Erreur cockpit:", err)
     } finally {
       setLoading(false)
     }
@@ -82,35 +69,18 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
     fetchExercise(1)
   }, [domain, exerciseId])
 
-  const getAIHint = async () => {
-    try {
-      const res = await fetch("/api/quiz/hint", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          domain,
-          mission: exercise.mission,
-          currentWrongAnswers: placedItems,
-        }),
-      })
-      const data = await res.json()
-      setDynamicHint(data.hint)
-    } catch (err) {
-      console.error("Erreur indice Nexora:", err)
-    }
-  }
-
   const handleSubmit = async () => {
-    if (placedItems.includes("") || placedItems.length === 0) return
-
+    if (!selectedOption || !exercise) return
     setIsSubmitting(true)
-    const success =
-      JSON.stringify(placedItems) === JSON.stringify(exercise.correctAnswers)
+
+    const answers = exercise.correctAnswers || exercise.answers || []
+    const success = selectedOption === answers[0]
     setIsCorrect(success)
 
-    const userId = localStorage.getItem("userId")
-
     if (success) {
+      const userId = localStorage.getItem("userId")
+      const currentLevelInt = parseInt(exerciseId)
+
       try {
         if (exerciseCount < TOTAL_REQUIRED) {
           await fetch("/api/user/progress", {
@@ -119,7 +89,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
             body: JSON.stringify({
               userId,
               xpToAdd: 50,
-              nextStep: parseInt(exerciseId),
+              nextStep: currentLevelInt,
             }),
           })
 
@@ -134,7 +104,7 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
             body: JSON.stringify({
               userId,
               xpToAdd: 150,
-              nextStep: parseInt(exerciseId) + 1,
+              nextStep: currentLevelInt + 1,
             }),
           })
 
@@ -143,301 +113,284 @@ export default function DragDropQuiz({ params }: QuizPageProps) {
           }
         }
       } catch (err) {
-        console.error("Erreur progression:", err)
+        console.error("Échec de synchronisation orbitale")
       }
-    } else {
-      await getAIHint()
     }
     setIsSubmitting(false)
   }
 
+  const displayQuestion =
+    exercise?.question ||
+    exercise?.text ||
+    exercise?.mission ||
+    "Initialisation..."
+
   if (loading || !exercise)
     return (
-      <div className="min-h-screen bg-[#050810] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="animate-spin text-cyan-400 w-10 h-10" />
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400 italic">
-          Génération du module {exerciseCount}/{TOTAL_REQUIRED}...
+      <div className="min-h-screen bg-[#080b14] flex flex-col items-center justify-center gap-4">
+        <Loader2 className="animate-spin text-cyan-400 w-12 h-12" />
+        <p className="text-cyan-400 text-[10px] font-black uppercase tracking-[0.3em]">
+          Initialisation du protocole...
         </p>
       </div>
     )
 
   return (
-    <div className="min-h-screen bg-[#050810] text-white p-3 sm:p-6 flex flex-col gap-4 sm:gap-8 font-sans overflow-x-hidden">
-      {/* HEADER HUD */}
-      <header className="flex justify-between items-center glass-panel p-3 sm:p-4 border-b-2 border-cyan-500/50">
+    <div className="min-h-screen bg-[#020617] text-slate-200 p-4 lg:p-8 font-sans overflow-hidden relative">
+      <header className="max-w-[1600px] mx-auto flex justify-between items-center mb-6 relative z-10">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-white/10 rounded-full border border-white/5 transition-colors"
+            className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:bg-slate-700 transition-colors shadow-lg"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={20} />
           </button>
           <div>
-            <h1 className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">
-              Secteur {domain.toUpperCase()} // Séquence {exerciseCount} sur{" "}
-              {TOTAL_REQUIRED}
-            </h1>
-            <p className="text-base sm:text-xl font-black uppercase tracking-tighter text-white font-sans">
-              {exercise?.mission || "Chargement..."}
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              Pilot: Sync Mode
             </p>
+            <div className="w-32 h-1.5 bg-slate-800 rounded-full mt-1 overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{
+                  width: `${(exerciseCount / TOTAL_REQUIRED) * 100}%`,
+                }}
+                className="h-full bg-cyan-500 shadow-[0_0_10px_#22d3ee]"
+              />
+            </div>
           </div>
         </div>
-        <Bot className="text-cyan-400 animate-pulse w-6 h-6" />
+        <h2 className="text-xl lg:text-2xl font-black uppercase italic tracking-tighter text-white">
+          Level {exerciseId}: {domain.toUpperCase()} Protocol
+        </h2>
+        <div className="flex items-center gap-3 bg-slate-900/80 p-2 px-4 rounded-xl border border-white/5 backdrop-blur-md">
+          <ShieldCheck size={16} className="text-emerald-500" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Stability: 100%
+          </span>
+        </div>
       </header>
 
-      <main className="flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-8 flex-1">
-        {/* PANEL GAUCHE */}
-        <aside className="lg:col-span-3 glass-panel p-4 sm:p-6 bg-slate-900/40 border border-white/5 flex flex-col gap-6">
-          <h2 className="text-[10px] font-black text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-            <Terminal size={12} /> Objectifs du Scan
-          </h2>
-          <div className="p-4 bg-cyan-500/5 rounded border border-cyan-500/20 italic text-[11px] text-slate-300 leading-relaxed">
-            {exercise.question
-              ? "Pilote, analysez la question et sélectionnez la réponse unique pour stabiliser le flux de données."
-              : "Pilote, insérez les fragments de code manquants dans les emplacements vides pour restaurer le noyau."}
+      <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 h-[calc(100vh-140px)]">
+        <aside className="lg:col-span-3 flex flex-col gap-6 h-full">
+          <div className="flex-1 bg-slate-900/40 backdrop-blur-xl border border-cyan-500/20 rounded-[2rem] p-6 flex flex-col shadow-2xl">
+            <span className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.2em] mb-4 italic">
+              Mission / Quest
+            </span>
+            <div className="mb-6">
+              <h3 className="text-sm font-black uppercase text-white mb-2 leading-tight">
+                Rebuild the core module
+              </h3>
+              <p className="text-[11px] text-slate-400 leading-relaxed italic">
+                "{exercise.mission || "Stabilisation des protocoles"}"
+              </p>
+            </div>
+            <div className="space-y-3 mt-4">
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-4">
+                Objectives
+              </span>
+              {[
+                "Analyser le fragment",
+                "Identifier les balises",
+                "Restaurer le noyau",
+              ].map((obj, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${i + 1 === exerciseCount ? "bg-cyan-500/10 border-cyan-500/30 shadow-inner" : "bg-slate-950/50 border-white/5"}`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-md border flex items-center justify-center ${i + 1 < exerciseCount ? "bg-emerald-500 border-emerald-500" : "border-slate-700"}`}
+                  >
+                    {i + 1 < exerciseCount && (
+                      <CheckCircle2 size={12} className="text-white" />
+                    )}
+                  </div>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-tighter ${i + 1 === exerciseCount ? "text-white" : "text-slate-600"}`}
+                  >
+                    {obj}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-auto pt-6 border-t border-white/5 text-center">
+              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
+                Séquence {exerciseCount} / {TOTAL_REQUIRED}
+              </p>
+            </div>
           </div>
-
-          {isCorrect === false && (
-            <motion.div
-              initial={{ x: -10, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              className="p-4 bg-red-500/10 border border-red-500/20 rounded flex items-start gap-3"
-            >
-              <XCircle className="text-red-500 shrink-0" size={16} />
-              <div>
-                <p className="text-[10px] font-black text-red-500 uppercase mb-1">
-                  Erreur de noyau
-                </p>
-                <p className="text-[10px] text-slate-400 leading-tight">
-                  {dynamicHint ||
-                    "Réponse incorrecte. Analysez l'indice de l'IA."}
-                </p>
-              </div>
-            </motion.div>
-          )}
         </aside>
 
-        {/* CENTRE : CONTENU DYNAMIQUE (QCM ou DRAG&DROP) */}
-        <section className="lg:col-span-9 flex flex-col gap-6">
-          <div className="flex-1 glass-panel bg-[#0b1120]/50 border border-white/5 p-6 sm:p-12 flex items-center justify-center relative shadow-inner min-h-[300px]">
-            {exercise.question ? (
-              /* AFFICHAGE QCM */
-              <div className="w-full max-w-xl flex flex-col gap-8">
-                <h3 className="text-xl sm:text-2xl font-black italic uppercase text-cyan-400 text-center tracking-tight leading-tight">
-                  {exercise.question}
-                </h3>
-                <div className="grid grid-cols-1 gap-4">
-                  {exercise.options.map((opt: string) => (
-                    <button
-                      key={opt}
-                      onClick={() => {
-                        setPlacedItems([opt])
-                        setIsCorrect(null)
-                      }}
-                      className={`p-5 border-2 transition-all text-left uppercase font-black text-xs tracking-widest ${
-                        placedItems[0] === opt
-                          ? "border-cyan-500 bg-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.2)]"
-                          : "border-white/5 bg-white/5 hover:bg-white/10"
-                      }`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
+        <main className="lg:col-span-6 flex flex-col gap-6 h-full">
+          <div
+            className={`flex-1 bg-[#0b0f1a] border transition-all duration-500 rounded-[2.5rem] flex flex-col shadow-2xl relative overflow-hidden ${isCorrect === false ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]" : "border-white/10"}`}
+          >
+            <div className="bg-[#161b22] px-6 py-4 border-b border-white/5 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2">
+                <Terminal size={14} className="text-cyan-400" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 font-mono">
+                  Question Terminal
+                </span>
+              </div>
+              <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/30 shadow-sm" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/30 shadow-sm" />
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/30 shadow-sm" />
+              </div>
+            </div>
+
+            <div className="flex-1 p-6 lg:p-10 flex flex-col items-center justify-center overflow-y-auto relative">
+              <div className="mb-10 text-center w-full max-w-lg relative z-10">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="mb-6"
+                >
+                  <HelpCircle
+                    size={48}
+                    className="text-cyan-400 mx-auto drop-shadow-[0_0_15px_rgba(34,211,238,0.4)]"
+                  />
+                </motion.div>
+                <h2 className="text-xl lg:text-3xl font-black uppercase italic tracking-tighter text-white leading-tight mb-6 drop-shadow-xl">
+                  {displayQuestion}
+                </h2>
+                <div className="h-1 w-32 bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent mx-auto rounded-full" />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 w-full max-w-md relative z-10">
+                {exercise?.options?.map((opt: string) => (
+                  <button
+                    key={opt}
+                    onClick={() => {
+                      setSelectedOption(opt)
+                      setIsCorrect(null)
+                    }}
+                    className={`group p-4 rounded-2xl border-2 transition-all text-left relative overflow-hidden ${selectedOption === opt ? "border-cyan-500 bg-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.2)]" : "border-white/5 bg-slate-900/80 hover:bg-slate-800 hover:border-white/10"}`}
+                  >
+                    <div className="flex items-center gap-4 relative z-20">
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${selectedOption === opt ? "border-cyan-500 bg-cyan-500/20 shadow-inner" : "border-slate-700"}`}
+                      >
+                        {selectedOption === opt && (
+                          <div className="w-2.5 h-2.5 bg-cyan-400 rounded-full shadow-[0_0_10px_#22d3ee]" />
+                        )}
+                      </div>
+                      <span
+                        className={`text-[12px] font-black uppercase tracking-widest ${selectedOption === opt ? "text-cyan-400" : "text-slate-300 group-hover:text-white"}`}
+                      >
+                        {opt}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-5 border-t border-white/5 bg-slate-950/40 flex gap-4 shrink-0 relative z-10 backdrop-blur-sm">
+              <button
+                onClick={() => fetchExercise(exerciseCount)}
+                className="p-4 bg-slate-800 border border-white/10 rounded-2xl hover:bg-slate-700 text-slate-400 hover:text-white transition-all shadow-inner"
+              >
+                <RotateCcw size={20} />
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!selectedOption || isSubmitting || isCorrect === true}
+                className={`flex-1 py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl ${isCorrect ? "bg-emerald-500 text-white" : "bg-cyan-500 text-black hover:bg-cyan-400"} disabled:opacity-20`}
+              >
+                {isSubmitting ? (
+                  <Loader2 className="animate-spin mx-auto" size={18} />
+                ) : isCorrect ? (
+                  "Protocol Restored"
+                ) : (
+                  "Submit Solution"
+                )}
+              </button>
+            </div>
+          </div>
+        </main>
+
+        <aside className="lg:col-span-3 flex flex-col gap-6 h-full">
+          <div className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-6 h-1/2 flex flex-col shadow-xl">
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 italic">
+              Module Preview
+            </span>
+            <div className="flex-1 bg-black/40 rounded-2xl border border-white/5 flex items-center justify-center p-4 relative overflow-hidden group">
+              <div className="text-center relative z-10">
+                <Cpu
+                  size={24}
+                  className={`mx-auto mb-2 transition-colors ${isCorrect ? "text-emerald-400" : "text-slate-700"}`}
+                />
+                <p className="text-[10px] font-bold text-slate-600 uppercase italic leading-tight">
+                  Status: {isCorrect ? "Online" : "Offline"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 rounded-[2rem] p-6 flex-1 relative overflow-hidden group shadow-2xl">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
+              <Bot size={80} />
+            </div>
+            <div className="relative z-10 flex flex-col h-full">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center border border-cyan-500/30">
+                  <Bot size={22} className="text-cyan-400 animate-pulse" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest block italic">
+                    Nexora Assistant
+                  </span>
+                  <span className="text-[8px] text-slate-500 uppercase font-bold tracking-widest opacity-60">
+                    — NEXORA V3
+                  </span>
                 </div>
               </div>
-            ) : (
-              /* AFFICHAGE DRAG & DROP */
-              <div className="text-sm sm:text-2xl font-mono leading-relaxed sm:leading-[5.5rem] text-slate-300 text-center">
-                {exercise?.textWithBlanks
-                  ?.split("[BLANK]")
-                  .map((part: string, i: number, arr: any[]) => (
-                    <React.Fragment key={i}>
-                      {part}
-                      {i < arr.length - 1 && (
-                        <div
-                          className={`inline-block min-w-[8rem] sm:min-w-[12rem] h-10 sm:h-14 mx-2 sm:mx-3 translate-y-2 sm:translate-y-4 border-2 border-dashed rounded-xl transition-all cursor-pointer ${
-                            placedItems[i]
-                              ? "border-cyan-400 bg-cyan-400/10 shadow-[0_0_15px_rgba(34,211,238,0.2)]"
-                              : "border-slate-800 bg-black/40 hover:border-slate-700"
-                          }`}
-                          onClick={() => {
-                            if (placedItems[i]) {
-                              const newPlaced = [...placedItems]
-                              setAvailableOptions([
-                                ...availableOptions,
-                                placedItems[i],
-                              ])
-                              newPlaced[i] = ""
-                              setPlacedItems(newPlaced)
-                              setIsCorrect(null)
-                            }
-                          }}
-                        >
-                          {placedItems[i] && (
-                            <motion.div
-                              initial={{ scale: 0.8, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              className="w-full h-full flex items-center justify-center text-[10px] sm:text-xs font-black text-cyan-400 tracking-widest uppercase px-4"
-                            >
-                              {placedItems[i]}
-                            </motion.div>
-                          )}
-                        </div>
-                      )}
-                    </React.Fragment>
-                  ))}
+              <div className="flex-1 bg-slate-950/50 rounded-2xl border border-white/5 p-4 relative">
+                <Info
+                  size={12}
+                  className="text-cyan-500 absolute top-3 right-3 opacity-30"
+                />
+                <p className="text-[11px] text-slate-400 leading-relaxed italic">
+                  "{exercise?.hint || "Vérifiez les protocoles."}"
+                </p>
               </div>
-            )}
+            </div>
           </div>
+        </aside>
+      </div>
 
-          {/* DOCK OPTIONS (SEULEMENT DRAG & DROP) */}
-          <AnimatePresence>
-            {!exercise.question && (
-              <motion.div
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 50, opacity: 0 }}
-                className="h-28 sm:h-32 glass-panel bg-slate-900/40 border border-white/5 p-4 sm:p-6 flex items-center gap-4 overflow-x-auto scrollbar-hide"
-              >
-                {availableOptions.map((opt) => (
-                  <motion.button
-                    key={opt}
-                    whileHover={{ y: -5, scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      const emptyIndex = placedItems.indexOf("")
-                      if (emptyIndex !== -1) {
-                        const newPlaced = [...placedItems]
-                        newPlaced[emptyIndex] = opt
-                        setPlacedItems(newPlaced)
-                        setAvailableOptions(
-                          availableOptions.filter((o) => o !== opt),
-                        )
-                        setIsCorrect(null)
-                      }
-                    }}
-                    className="px-6 sm:px-8 py-3 border border-cyan-500/30 rounded-lg bg-cyan-500/10 text-cyan-400 font-black text-[10px] tracking-widest uppercase shadow-lg transition-all whitespace-nowrap"
-                  >
-                    {opt}
-                  </motion.button>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </section>
-      </main>
-
-      {/* FOOTER ACTION & HINT */}
-      <footer className="glass-panel p-4 sm:p-6 border-l-4 border-cyan-500 bg-[#050810]/90 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="flex items-start gap-4 flex-1">
-          <Bot className="text-cyan-400 shrink-0" size={24} />
-          <div>
-            <p className="text-[10px] font-black text-cyan-400 mb-1 uppercase tracking-widest">
-              IA Nexora : Communication Indice
-            </p>
-            <p className="text-[11px] text-slate-400 italic leading-relaxed max-w-2xl">
-              "{exercise?.hint || "Analyse de l'environnement en cours..."}"
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 w-full sm:w-auto">
-          <button
-            onClick={() => fetchExercise(exerciseCount)}
-            className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors border border-white/5"
-            title="Réinitialiser"
-          >
-            <RotateCcw size={18} />
-          </button>
-
-          <button
-            onClick={handleSubmit}
-            disabled={
-              placedItems.includes("") ||
-              isSubmitting ||
-              isCorrect === true ||
-              placedItems.length === 0
-            }
-            className={`flex-1 sm:flex-none px-12 py-4 btn-cyber text-[10px] font-black uppercase tracking-widest flex items-center gap-3 min-w-[200px] justify-center transition-all ${
-              isCorrect ? "bg-green-500/20 border-green-500 text-green-400" : ""
-            } disabled:opacity-20`}
-          >
-            {isSubmitting ? (
-              <Loader2 className="animate-spin" size={14} />
-            ) : isCorrect ? (
-              "Séquence Validée"
-            ) : exerciseCount === TOTAL_REQUIRED ? (
-              "Finaliser le Secteur"
-            ) : (
-              "Vérifier la Réponse"
-            )}
-          </button>
-        </div>
-      </footer>
-
-      {/* MODALE DE SUCCÈS FINALE */}
       <AnimatePresence>
         {showSuccessModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[100] bg-[#050810]/95 backdrop-blur-xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-[#050810]/95 backdrop-blur-2xl flex items-center justify-center p-4"
           >
             <motion.div
-              initial={{ scale: 0.9, y: 20, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              className="glass-panel p-10 border-2 border-green-500 shadow-[0_0_60px_rgba(34,197,94,0.3)] max-w-md w-full text-center flex flex-col items-center gap-8"
+              initial={{ scale: 0.9, y: 30 }}
+              animate={{ scale: 1, y: 0 }}
+              className="max-w-md w-full bg-[#0f172a] border-2 border-cyan-500/30 rounded-[3rem] p-12 text-center shadow-[0_0_120px_rgba(34,211,238,0.2)] relative"
             >
-              <div className="relative">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
-                  className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-[0_0_40px_#22c55e]"
-                >
-                  <LockOpen size={48} className="text-white" />
-                </motion.div>
-                <motion.div
-                  animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                  className="absolute inset-0 bg-green-500 rounded-full blur-3xl opacity-20"
-                />
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-slate-900 border-2 border-cyan-500 rounded-full flex items-center justify-center shadow-[0_0_40px_#22d3ee]">
+                <Sparkles size={40} className="text-cyan-400" />
               </div>
-
-              <div>
-                <h2 className="text-4xl font-black uppercase tracking-tighter italic leading-none">
-                  Niveau Débloqué
-                </h2>
-                <p className="text-green-400 font-bold text-[10px] tracking-[0.4em] uppercase mt-4 italic">
-                  Secteur {parseInt(exerciseId) + 1} désormais accessible.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 w-full py-6 border-y border-white/10">
-                <div className="text-center border-r border-white/10">
-                  <p className="text-[8px] text-slate-500 font-black uppercase mb-1">
-                    XP Bonus Total
-                  </p>
-                  <p className="text-2xl font-black text-yellow-400">+250</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-[8px] text-slate-500 font-black uppercase mb-1">
-                    Palier
-                  </p>
-                  <p className="text-2xl font-black text-white">
-                    {parseInt(exerciseId) + 1}
-                  </p>
-                </div>
-              </div>
-
+              <h2 className="text-4xl font-black uppercase tracking-tighter mb-2 italic mt-6 text-white drop-shadow-lg">
+                Niveau Complet
+              </h2>
+              <p className="text-emerald-400 font-black text-sm tracking-[0.4em] mb-10 drop-shadow-md">
+                +50 XP Gagné
+              </p>
               <button
-                onClick={() => router.push("/map")}
-                className="w-full py-5 bg-green-500 text-black text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 group hover:bg-green-400 transition-colors"
+                onClick={() => {
+                  window.location.href = `/map?domain=${domain}&t=${Date.now()}`
+                }}
+                className="w-full py-6 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-2xl font-black text-[10px] uppercase tracking-widest text-black shadow-2xl group active:scale-95 transition-all"
               >
-                Retourner à la Map{" "}
+                Continue le niveau suivant{" "}
                 <ArrowRight
-                  size={14}
-                  className="group-hover:translate-x-1 transition-transform"
+                  size={16}
+                  className="inline ml-2 group-hover:translate-x-2 transition-transform"
                 />
               </button>
             </motion.div>
