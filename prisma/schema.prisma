@@ -21,6 +21,7 @@ model User {
   email     String   @unique
   name      String?
   password  String
+  xp        Int      @default(0)
   role      String   @default("CADET")
   answers   Json?    // Stocke les réponses d'identification (Stage 2)
 

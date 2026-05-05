@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 const MISSIONS = [
   {
@@ -49,6 +50,34 @@ const MISSIONS = [
 
 export default function SelectionPage() {
   const router = useRouter()
+  const [userName, setUserName] = useState<string>("CADET")
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userId = localStorage.getItem("userId")
+      if (!userId) return
+
+      try {
+        // Tentative de récupération via l'API (recommandé)
+        const res = await fetch(`/api/user/progress?userId=${userId}`)
+        const data = await res.json()
+
+        // On cherche le nom dans l'objet user retourné par l'API
+        if (data.updated && data.updated.user && data.updated.user.name) {
+          setUserName(data.updated.user.name.toUpperCase())
+        } else {
+          // Fallback : Si l'API ne renvoie pas le nom, on regarde le localStorage
+          const storedName = localStorage.getItem("userName")
+          if (storedName) setUserName(storedName.toUpperCase())
+        }
+      } catch (err) {
+        const storedName = localStorage.getItem("userName")
+        if (storedName) setUserName(storedName.toUpperCase())
+      }
+    }
+
+    fetchUser()
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
@@ -62,8 +91,9 @@ export default function SelectionPage() {
               Sélecteur de Mission
             </h1>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.4em] mt-2">
-              Identification cadet confirmée // Choisissez un secteur
-              d'opération
+              Identification :{" "}
+              <span className="text-cyan-400">PILOTE {userName}</span> //
+              Choisissez un secteur d'opération
             </p>
           </div>
           <div className="hidden md:flex gap-4 items-center">
@@ -96,7 +126,8 @@ export default function SelectionPage() {
               />
 
               <div
-                className={`h-full glass-panel relative overflow-hidden flex flex-col items-center justify-between p-8 border-b-4 transition-all duration-300 border-white/5 group-hover:border-[${mission.color}]`}
+                className={`h-full glass-panel relative overflow-hidden flex flex-col items-center justify-between p-8 border-b-4 transition-all duration-300 border-white/5`}
+                style={{ borderBottomColor: mission.color + "44" }}
               >
                 <span className="text-[10px] font-black text-slate-500 group-hover:text-white transition-colors tracking-[0.3em]">
                   {mission.label}
@@ -115,12 +146,12 @@ export default function SelectionPage() {
                 </div>
 
                 <div className="text-center w-full">
-                  <h2 className="text-2xl font-black uppercase tracking-tighter mb-2 group-hover:neon-text transition-all">
+                  <h2 className="text-2xl font-black uppercase tracking-tighter mb-2 group-hover:text-white transition-all">
                     {mission.title}
                   </h2>
                   <div className="h-0.5 w-full bg-white/5 relative overflow-hidden">
                     <motion.div
-                      className="absolute inset-0 bg-current opacity-50"
+                      className="absolute inset-0 opacity-50"
                       style={{ backgroundColor: mission.color }}
                       initial={{ x: "-100%" }}
                       whileHover={{ x: "100%" }}
