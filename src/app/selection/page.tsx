@@ -68,8 +68,7 @@ export default function SelectionPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans text-white">
-      {/* Background Grid */}
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-start py-8 p-4 relative font-sans">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20" />
 
       <div className="relative z-10 w-full max-w-6xl">
@@ -88,7 +87,7 @@ export default function SelectionPage() {
           <Bot className="w-10 h-10 text-cyan-500/50 animate-pulse hidden md:block" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-[60vh]">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {MISSIONS.map((mission, index) => (
             <motion.div
               key={mission.id}
@@ -98,8 +97,15 @@ export default function SelectionPage() {
               onClick={() => router.push(`/map?domain=${mission.id}`)}
               className="group relative cursor-pointer"
             >
-              <div className="h-full glass-panel relative overflow-hidden flex flex-col items-center justify-between p-8 border-b-4 border-white/5 group-hover:border-white transition-all">
-                <span className="text-[10px] font-black text-slate-500 group-hover:text-white tracking-[0.3em]">
+              <div
+                className={`absolute inset-0 rounded-2xl blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`}
+                style={{ backgroundColor: mission.color }}
+              />
+
+              <div
+                className={`min-h-55 glass-panel relative overflow-hidden flex flex-col items-center justify-between p-8 border-b-4 transition-all duration-300 border-white/5 group-hover:border-[${mission.color}]`}
+              >
+                <span className="text-[10px] font-black text-slate-500 group-hover:text-white transition-colors tracking-[0.3em]">
                   {mission.label}
                 </span>
                 <mission.icon
