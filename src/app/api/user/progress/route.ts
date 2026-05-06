@@ -5,7 +5,8 @@ import { NextResponse } from "next/server"
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { userId, xpToAdd, nextStep } = body
+    // AJOUT : on récupère 'domain' depuis le body envoyé par le Quiz
+    const { userId, xpToAdd, nextStep, domain } = body
 
     // 1. VÉRIFICATION DE SÉCURITÉ DE BASE
     if (!userId || nextStep === undefined) {
@@ -21,11 +22,12 @@ export async function POST(req: Request) {
       )
     }
 
-    // 2. CONVERSION IMPÉRATIVE (D'après ton schéma Prisma, User.id est Int)
+    // 2. CONVERSION IMPÉRATIVE
     const userIdInt = parseInt(userId)
     const nextStepInt = parseInt(nextStep)
+    // On s'assure que le domaine est en minuscule pour correspondre à la BDD
+    const activeDomain = (domain || "html").toLowerCase()
 
-    // Vérification que les conversions ont fonctionné
     if (isNaN(userIdInt) || isNaN(nextStepInt)) {
       logger.error({
         event: "DATA_CONVERSION_ERROR",
@@ -39,25 +41,32 @@ export async function POST(req: Request) {
       )
     }
 
-    // 3. TRANSACTION ATOMIQUE (Garantit que XP + Étape sont mis à jour ensemble)
+    // 3. TRANSACTION ATOMIQUE
     const result = await prisma.$transaction([
-      // A. Mise à jour de l'XP de l'utilisateur
+      // A. Mise à jour de l'XP globale de l'utilisateur (Table User)
       prisma.user.update({
         where: { id: userIdInt },
         data: { xp: { increment: xpToAdd || 0 } },
       }),
 
-      // B. Mise à jour (ou création) de la ligne de progression
+      // B. Mise à jour (ou création) de la ligne de progression (Table Progress)
       prisma.progress.upsert({
-        where: { userId: userIdInt },
+        where: {
+          // CORRECTION ICI : Utilisation de l'index composé userId_domain
+          userId_domain: {
+            userId: userIdInt,
+            domain: activeDomain,
+          },
+        },
         update: {
-          currentStep: nextStepInt, // ON FORCE LE NOUVEAU PALLIER ICI (ex: 4)
+          currentStep: nextStepInt,
           score: { increment: xpToAdd || 0 },
           lastActivity: new Date(),
         },
         create: {
           userId: userIdInt,
-          currentStep: nextStepInt, // ON INITIALISE LE PALLIER ICI (ex: 4)
+          domain: activeDomain, // On initialise le domaine à la création
+          currentStep: nextStepInt,
           score: xpToAdd || 0,
         },
       }),
@@ -67,20 +76,19 @@ export async function POST(req: Request) {
     logger.info({
       event: "XP_UPDATE_SUCCESS",
       userId: userIdInt,
+      domain: activeDomain,
       xpGained: xpToAdd,
-      newTotalXp: result[0].xp,
-      reachedStep: nextStepInt, // Audit : On enregistre que le niveau 4 est atteint
-      message: `Audit : L'utilisateur ${userIdInt} a validé une étape. +${xpToAdd} XP ajoutés. Nouveau step: ${nextStepInt}.`,
+      reachedStep: nextStepInt,
+      message: `Audit : L'utilisateur ${userIdInt} a validé une étape en ${activeDomain}. +${xpToAdd} XP. Nouveau step: ${nextStepInt}.`,
     })
 
-    // 5. RÉPONSE AU CLIENT (Quiz)
+    // 5. RÉPONSE AU CLIENT
     return NextResponse.json({
       success: true,
       newTotalXp: result[0].xp,
-      currentStep: result[1].currentStep, // Renvoie '4' au quiz pour confirmation
+      currentStep: result[1].currentStep,
     })
   } catch (error: any) {
-    // Gestion centralisée des erreurs Prisma (P2002, P2025, etc.)
     logger.error({
       event: "PROGRESS_ROUTE_ERROR",
       message: error.message,

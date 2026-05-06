@@ -1,60 +1,67 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma"
+import { NextResponse } from "next/server"
 
 export async function GET(req: Request) {
   try {
-    // 1. Récupération de l'ID depuis les paramètres de l'URL
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
+    const { searchParams } = new URL(req.url)
+    const userId = searchParams.get("userId")
+    const domain = searchParams.get("domain") || "html" // On récupère le domaine de l'URL
 
     if (!userId) {
       return NextResponse.json(
         { error: "Identifiant pilote manquant." },
-        { status: 400 }
-      );
+        { status: 400 },
+      )
     }
 
-    // 2. Requête Prisma pour récupérer l'utilisateur avec ses relations
     const user = await prisma.user.findUnique({
-      where: { 
-        id: parseInt(userId) 
+      where: {
+        id: parseInt(userId),
       },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        // On inclut les données du domaine choisi
+        xp: true, // ✅ CRUCIAL : Ajout de l'XP globale (les 1000 XP de Bob)
         domain: {
           select: {
             label: true,
-            slug: true
-          }
+            slug: true,
+          },
         },
-        // On inclut la progression (score et étape actuelle)
         progress: {
+          // ✅ FILTRE : On ne prend que la progression du domaine actuel
+          where: {
+            domain: domain.toLowerCase(),
+          },
           select: {
             score: true,
-            currentStep: true
-          }
-        }
-      }
-    });
+            currentStep: true,
+          },
+        },
+      },
+    })
 
     if (!user) {
       return NextResponse.json(
         { error: "Pilote non répertorié dans la base." },
-        { status: 404 }
-      );
+        { status: 404 },
+      )
     }
 
-    return NextResponse.json({ user });
+    // On formate la réponse pour que userData.progress soit un objet (pas un tableau)
+    const formattedUser = {
+      ...user,
+      progress: user.progress[0] || { score: 0, currentStep: 1 },
+    }
 
+    return NextResponse.json({ user: formattedUser })
   } catch (error) {
-    console.error("Erreur Profile API:", error);
+    console.error("Erreur Profile API:", error)
     return NextResponse.json(
       { error: "Échec de la liaison avec la base de données." },
-      { status: 500 }
-    );
+      { status: 500 },
+    )
   }
 }
