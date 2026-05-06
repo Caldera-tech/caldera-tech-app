@@ -1,7 +1,25 @@
-import { Inter } from "next/font/google"
+import { Rajdhani, Orbitron, Share_Tech_Mono } from "next/font/google"
 import "./globals.css"
 
-const inter = Inter({ subsets: ["latin"] })
+const rajdhani = Rajdhani({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+})
+
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+  variable: "--font-display",
+  display: "swap",
+})
+
+const shareTechMono = Share_Tech_Mono({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-mono-tech",
+  display: "swap",
+})
 
 export const metadata = {
   title: "Nexora Tech - ",
@@ -14,10 +32,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="fr" className="dark">
-      <body className={`${inter.className} min-h-screen relative`}>
-        <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
-
+    <html lang="fr" className={`dark ${orbitron.variable} ${shareTechMono.variable}`}>
+      <body className={`${rajdhani.className} min-h-screen relative`}>
         <main className="relative z-10">{children}</main>
       </body>
     </html>

@@ -1,52 +1,135 @@
 @import "tailwindcss";
 
 @theme {
-  /* 1. On définit les couleurs */
-  --color-ui-bg: #0b1120;
-  --color-ui-card: rgba(15, 23, 42, 0.6);
-  --color-cyber-cyan: #22d3ee;
-  --color-cyber-purple: #a855f7;
+  /* Palette Nexora */
+  --color-ui-bg: #040B1B;
+  --color-cyber-cyan: #43FFFF;
+  --color-cyber-purple: #CC33FF;
+  --color-cyber-green: #33FF33;
+  --color-cyber-pink: #FF33CC;
 
-  /* 2. On définit la police (Utilise le nom de la variable que Next.js injecte) */
-  --font-display: "Orbitron", ui-sans-serif;
+  /* Polices */
+  --font-display: "Orbitron", ui-monospace, monospace;
+  --font-mono-tech: "Share Tech Mono", ui-monospace, monospace;
 }
 
-/* 3. On utilise les utilitaires APRES le bloc @theme */
 @layer base {
   :root {
     --background: var(--color-ui-bg);
-    --foreground: 255 255 255;
+    --foreground: 232 244 255;
+    --color-ui-card: rgba(6, 15, 34, 0.85);
+    --color-text: #E8F4FF;
+    --glow-cyan:   0 0 8px #43FFFF, 0 0 24px rgba(67, 255, 255, 0.5);
+    --glow-purple: 0 0 8px #CC33FF, 0 0 24px rgba(204, 51, 255, 0.5);
+    --glow-green:  0 0 8px #33FF33, 0 0 24px rgba(51, 255, 51, 0.5);
   }
 
   body {
-    @apply bg-ui-bg text-white antialiased;
+    @apply bg-ui-bg antialiased;
+    color: var(--color-text);
+    cursor: crosshair;
+    font-family: "Rajdhani", ui-sans-serif, sans-serif;
+  }
+
+  /* Scanlines overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.05) 2px,
+      rgba(0, 0, 0, 0.05) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* Grille de fond */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      linear-gradient(rgba(67, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(67, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
   }
 }
 
 @layer components {
   .neon-text {
-    /* N'utilise pas @apply pour des variables complexes si ça bug, utilise le CSS natif */
     font-family: var(--font-display);
-    background: linear-gradient(90deg, var(--color-cyber-cyan), #ffffff);
+    background: linear-gradient(90deg, var(--color-cyber-cyan), #E8F4FF);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.5));
+    filter: drop-shadow(0 0 8px rgba(67, 255, 255, 0.5));
+  }
+
+  /* Étiquettes style "Share Tech Mono" */
+  .neon-label {
+    font-family: var(--font-mono-tech, monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--color-cyber-cyan);
   }
 
   .glass-panel {
     background: var(--color-ui-card);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 1.5rem;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(67, 255, 255, 0.15);
   }
 
+  /* Bouton principal — style angulaire Nexora */
   .btn-cyber {
-    background: linear-gradient(
-      90deg,
-      var(--color-cyber-cyan),
-      var(--color-cyber-purple)
-    );
-    @apply text-black font-bold uppercase tracking-widest py-4 rounded-xl transition-all;
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #040B1B;
+    background: var(--color-cyber-cyan);
+    border: none;
+    padding: 14px 32px;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--glow-cyan);
+    display: inline-block;
+  }
+
+  .btn-cyber:hover {
+    background: var(--color-cyber-green);
+    box-shadow: var(--glow-green);
+    transform: scale(1.04);
+  }
+
+  /* Bouton secondaire outline */
+  .btn-cyber-outline {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--color-cyber-purple);
+    background: transparent;
+    border: 1px solid var(--color-cyber-purple);
+    padding: 13px 30px;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+
+  .btn-cyber-outline:hover {
+    background: rgba(204, 51, 255, 0.12);
+    box-shadow: var(--glow-purple);
+    transform: scale(1.04);
   }
 }
