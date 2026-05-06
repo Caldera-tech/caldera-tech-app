@@ -3,12 +3,22 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+const databaseUrl =
+  process.env["DATABASE_URL"] ??
+  "postgresql://postgres:postgres@localhost:5432/postgres";
+
+if (!process.env["DATABASE_URL"]) {
+  console.warn(
+    "DATABASE_URL is not defined. Using a fallback URL for Prisma tooling.",
+  );
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: databaseUrl,
   },
 });

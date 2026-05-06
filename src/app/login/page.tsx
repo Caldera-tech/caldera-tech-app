@@ -22,6 +22,12 @@ export default function LoginPage() {
     password: "",
   })
 
+  function getErrorMessage(error: unknown) {
+    return error instanceof Error
+      ? error.message
+      : "Accès refusé. Vérifiez vos identifiants."
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -44,8 +50,8 @@ export default function LoginPage() {
 
       localStorage.setItem("userId", result.user.id)
       router.push("/selection")
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err))
     } finally {
       setIsSubmitting(false)
     }
@@ -69,7 +75,7 @@ export default function LoginPage() {
             Authentification Pilote
           </h1>
           <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] mt-2">
-            Veuillez entrer vos codes d'accès
+            Veuillez entrer vos codes d&apos;accès
           </p>
         </div>
 
@@ -126,7 +132,7 @@ export default function LoginPage() {
               <Loader2 className="w-4 h-4 animate-spin mx-auto" />
             ) : (
               <span className="flex items-center justify-center gap-2">
-                DÉVERROUILLER L'ACCÈS{" "}
+                DÉVERROUILLER L&apos;ACCÈS{" "}
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </span>
             )}

@@ -1,6 +1,10 @@
 import { generateDomainQuestions, generateLevelExercise } from "@/lib/ai"
 import { NextResponse } from "next/server"
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Erreur inconnue"
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const domain = searchParams.get("domain") || "Développement"
@@ -8,8 +12,8 @@ export async function GET(req: Request) {
   try {
     const questions = await generateDomainQuestions(domain)
     return NextResponse.json({ questions })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
   }
 }
 
@@ -29,12 +33,13 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(exercise)
-  } catch (error: any) {
-    console.error("Erreur API Quiz:", error.message)
+  } catch (error: unknown) {
+    const message = getErrorMessage(error)
+    console.error("Erreur API Quiz:", message)
     return NextResponse.json(
       {
         error: "Échec de génération de l'exercice",
-        details: error.message,
+        details: message,
       },
       { status: 500 },
     )

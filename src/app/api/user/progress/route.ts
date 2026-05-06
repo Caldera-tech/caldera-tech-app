@@ -2,6 +2,14 @@ import logger from "@/lib/logger"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Erreur inconnue"
+}
+
+function getErrorStack(error: unknown) {
+  return error instanceof Error ? error.stack : undefined
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json()
@@ -88,15 +96,18 @@ export async function POST(req: Request) {
       newTotalXp: result[0].xp,
       currentStep: result[1].currentStep,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error({
       event: "PROGRESS_ROUTE_ERROR",
-      message: error.message,
-      stack: error.stack,
+      message: getErrorMessage(error),
+      stack: getErrorStack(error),
     })
 
     return NextResponse.json(
-      { error: "Échec de synchronisation orbitale", details: error.message },
+      {
+        error: "Échec de synchronisation orbitale",
+        details: getErrorMessage(error),
+      },
       { status: 500 },
     )
   }

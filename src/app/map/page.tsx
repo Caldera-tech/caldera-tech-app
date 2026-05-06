@@ -3,10 +3,31 @@
 import { motion } from "framer-motion"
 import { Loader2, LogOut, Play, Star } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
+import { Suspense, useCallback, useEffect, useState } from "react"
+
+type RadarSkill = {
+  label: string
+  value: number
+}
+
+type Level = {
+  id: number
+  label: string
+  x: string
+  y: string
+  status: "completed" | "available" | "locked"
+}
+
+type UserData = {
+  name: string
+  xp: number
+  progress?: {
+    currentStep: number
+  }
+}
 
 // --- Radar Chart Component ---
-function RadarChart({ skills }: { skills: any[] }) {
+function RadarChart({ skills }: { skills: RadarSkill[] }) {
   const size = 220
   const cx = size / 2
   const cy = size / 2
@@ -74,7 +95,7 @@ function NeonPath({
   levels,
   currentStep,
 }: {
-  levels: any[]
+  levels: Level[]
   currentStep: number
 }) {
   const displayCount = Math.min(currentStep, levels.length)
@@ -148,7 +169,7 @@ function NeonPath({
 }
 
 // --- Level Node ---
-function LevelNode({ lvl, onClick }: { lvl: any; onClick: () => void }) {
+function LevelNode({ lvl, onClick }: { lvl: Level; onClick: () => void }) {
   const isAvailable = lvl.status === "available"
   const isCompleted = lvl.status === "completed"
   const glowColor =
@@ -202,12 +223,12 @@ function LevelNode({ lvl, onClick }: { lvl: any; onClick: () => void }) {
   )
 }
 
-export default function MapPage() {
+function MapContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentDomain = searchParams.get("domain") || "html"
 
-  const [userData, setUserData] = useState<any>(null)
+  const [userData, setUserData] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchProfile = useCallback(async () => {
@@ -228,7 +249,7 @@ export default function MapPage() {
       if (data.user) {
         setUserData(data.user)
       }
-    } catch (err) {
+    } catch {
       console.error("Erreur synchronisation profil")
     } finally {
       setLoading(false)
@@ -236,7 +257,7 @@ export default function MapPage() {
   }, [router, currentDomain])
 
   useEffect(() => {
-    setLoading(true)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProfile()
   }, [currentDomain, fetchProfile])
 
@@ -258,7 +279,7 @@ export default function MapPage() {
   const currentStep = userData?.progress?.currentStep || 1
   const totalXP = userData?.xp || 0
 
-  const levels = [
+  const levels: Level[] = [
     { id: 1, label: "Les Bases", x: "15%", y: "70%" },
     { id: 2, label: "Fondations", x: "32%", y: "52%" },
     { id: 3, label: "Architecture", x: "50%", y: "42%" },
@@ -354,7 +375,7 @@ export default function MapPage() {
               </span>
             </h1>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em]">
-              Niveau d'accréditation : {currentStep} / 5
+              Niveau d&apos;accréditation : {currentStep} / 5
             </p>
           </div>
           <NeonPath levels={levels} currentStep={currentStep} />
@@ -423,5 +444,22 @@ export default function MapPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function MapPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#050810] flex flex-col items-center justify-center gap-4">
+          <Loader2 className="animate-spin text-cyan-400 w-12 h-12" />
+          <p className="text-cyan-400 font-black text-[10px] uppercase tracking-[0.3em]">
+            Initialisation Flux...
+          </p>
+        </div>
+      }
+    >
+      <MapContent />
+    </Suspense>
   )
 }
