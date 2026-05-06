@@ -3,10 +3,14 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
-const databaseUrl = process.env["DATABASE_URL"];
+const databaseUrl =
+  process.env["DATABASE_URL"] ??
+  "postgresql://postgres:postgres@localhost:5432/postgres";
 
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is not defined in environment variables.");
+if (!process.env["DATABASE_URL"]) {
+  console.warn(
+    "DATABASE_URL is not defined. Using a fallback URL for Prisma tooling.",
+  );
 }
 
 export default defineConfig({
