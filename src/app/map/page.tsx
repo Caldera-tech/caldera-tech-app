@@ -70,22 +70,27 @@ function RadarChart({ skills }: { skills: any[] }) {
 }
 
 // --- Neon Path SVG ---
-function NeonPath({ levels, currentStep }: { levels: any[]; currentStep: number }) {
-  // On trace jusqu'au niveau actuel
-  const displayCount = Math.min(currentStep, levels.length);
+function NeonPath({
+  levels,
+  currentStep,
+}: {
+  levels: any[]
+  currentStep: number
+}) {
+  const displayCount = Math.min(currentStep, levels.length)
   const activePoints = levels.slice(0, displayCount).map((lvl) => ({
     x: parseFloat(lvl.x),
     y: parseFloat(lvl.y),
-  }));
+  }))
 
-  if (activePoints.length < 2) return null;
+  if (activePoints.length < 2) return null
 
-  let pathData = `M ${activePoints[0].x} ${activePoints[0].y}`;
+  let pathData = `M ${activePoints[0].x} ${activePoints[0].y}`
   for (let i = 1; i < activePoints.length; i++) {
-    const prev = activePoints[i - 1];
-    const curr = activePoints[i];
-    const cp1x = prev.x + (curr.x - prev.x) / 2;
-    pathData += ` C ${cp1x} ${prev.y}, ${cp1x} ${curr.y}, ${curr.x} ${curr.y}`;
+    const prev = activePoints[i - 1]
+    const curr = activePoints[i]
+    const cp1x = prev.x + (curr.x - prev.x) / 2
+    pathData += ` C ${cp1x} ${prev.y}, ${cp1x} ${curr.y}, ${curr.x} ${curr.y}`
   }
 
   return (
@@ -96,33 +101,23 @@ function NeonPath({ levels, currentStep }: { levels: any[]; currentStep: number 
       style={{ zIndex: 5 }}
     >
       <defs>
-        {/* Filtre de lueur intense */}
         <filter id="ultraGlow" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="1.2" result="blur" />
           <feComposite in="SourceGraphic" in2="blur" operator="over" />
         </filter>
-
-        {/* Dégradé de la route (Cyan vers Violet/Rose) */}
         <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#22d3ee" />
           <stop offset="50%" stopColor="#a855f7" />
           <stop offset="100%" stopColor="#f43f5e" />
         </linearGradient>
       </defs>
-
-      {/* 1. Couche de fond : Ombre portée large pour donner de la profondeur */}
       <motion.path
         d={pathData}
         fill="none"
         stroke="#22d3ee"
         strokeWidth="3"
         strokeOpacity="0.1"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 1.5 }}
       />
-
-      {/* 2. Le Halo Extérieur (Glow) */}
       <motion.path
         d={pathData}
         fill="none"
@@ -130,24 +125,14 @@ function NeonPath({ levels, currentStep }: { levels: any[]; currentStep: number 
         strokeWidth="1.8"
         strokeOpacity="0.4"
         filter="url(#ultraGlow)"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 1.5, ease: "easeInOut" }}
       />
-
-      {/* 3. Le Trait Central (Cœur lumineux) */}
       <motion.path
         d={pathData}
         fill="none"
         stroke="url(#neonGradient)"
         strokeWidth="0.8"
         strokeLinecap="round"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 1.5, ease: "easeInOut" }}
       />
-
-      {/* 4. Petits filets de lumière (Effet "cinématique") */}
       <motion.path
         d={pathData}
         fill="none"
@@ -155,12 +140,11 @@ function NeonPath({ levels, currentStep }: { levels: any[]; currentStep: number 
         strokeWidth="0.2"
         strokeDasharray="0.5 10"
         strokeOpacity="0.8"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
+        animate={{ strokeDashoffset: [0, -20] }}
         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
       />
     </svg>
-  );
+  )
 }
 
 // --- Level Node ---
@@ -233,7 +217,6 @@ export default function MapPage() {
       return
     }
     try {
-      
       const res = await fetch(
         `/api/user/profile?userId=${userId}&domain=${currentDomain.toLowerCase()}&t=${Date.now()}`,
         {
@@ -253,8 +236,9 @@ export default function MapPage() {
   }, [router, currentDomain])
 
   useEffect(() => {
+    setLoading(true)
     fetchProfile()
-  }, [fetchProfile])
+  }, [currentDomain, fetchProfile])
 
   const handleLogout = () => {
     localStorage.clear()
@@ -270,7 +254,6 @@ export default function MapPage() {
         </p>
       </div>
     )
-
 
   const currentStep = userData?.progress?.currentStep || 1
   const totalXP = userData?.xp || 0
@@ -314,7 +297,6 @@ export default function MapPage() {
 
   return (
     <div className="min-h-screen w-full bg-[#050810] text-white flex flex-col overflow-hidden font-sans">
-      {/* Grille de fond dynamique */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.03]"
         style={{
@@ -325,24 +307,21 @@ export default function MapPage() {
 
       <nav className="relative z-10 h-16 flex items-center justify-between px-8 border-b border-white/5 bg-slate-950/80 backdrop-blur-xl">
         <div className="flex items-center gap-10">
-          <div className="flex items-center gap-3">
-            <span className="font-black uppercase text-lg tracking-tighter italic">
-              Nexora <span className="text-cyan-400">Hub</span>
-            </span>
-          </div>
+          <span className="font-black uppercase text-lg tracking-tighter italic">
+            Nexora <span className="text-cyan-400">Hub</span>
+          </span>
           <div className="hidden md:flex gap-6 text-[10px] font-black uppercase tracking-[0.2em]">
             <span className="text-cyan-400">
               Secteur: {currentDomain.toUpperCase()}
             </span>
             <button
               onClick={() => router.push("/selection")}
-              className="text-slate-500 hover:text-white transition-colors"
+              className="text-slate-500 hover:text-white"
             >
               Changer de Module
             </button>
           </div>
         </div>
-
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 px-4 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-full">
             <Star size={12} className="text-yellow-400 fill-yellow-400" />
@@ -352,7 +331,7 @@ export default function MapPage() {
           </div>
           <button
             onClick={handleLogout}
-            className="text-slate-500 hover:text-red-400 transition-colors"
+            className="text-slate-500 hover:text-red-400"
           >
             <LogOut size={18} />
           </button>
@@ -366,7 +345,6 @@ export default function MapPage() {
         className="relative z-10 flex flex-1 gap-6 p-6 overflow-hidden"
         style={{ height: "calc(100vh - 64px)" }}
       >
-        {/* ZONE DE CARTE */}
         <div className="flex-[3] relative rounded-[2.5rem] border border-white/5 bg-slate-950/40 backdrop-blur-md shadow-2xl overflow-hidden">
           <div className="absolute top-10 left-10 z-20">
             <h1 className="text-3xl font-black uppercase italic tracking-tighter leading-none mb-2">
@@ -375,16 +353,11 @@ export default function MapPage() {
                 {currentDomain.toUpperCase()}
               </span>
             </h1>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em]">
-                Niveau d'accréditation : {currentStep} / 5
-              </p>
-            </div>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em]">
+              Niveau d'accréditation : {currentStep} / 5
+            </p>
           </div>
-
           <NeonPath levels={levels} currentStep={currentStep} />
-
           <div className="absolute inset-0 z-10">
             {levels.map((lvl) => (
               <LevelNode
@@ -396,11 +369,9 @@ export default function MapPage() {
               />
             ))}
           </div>
-
           <motion.button
-            className="absolute bottom-10 left-10 py-5 px-10 text-[11px] font-black flex items-center gap-3 z-20 bg-cyan-500 text-black rounded-2xl shadow-[0_0_40px_rgba(34,211,238,0.3)] hover:bg-cyan-400 transition-colors"
+            className="absolute bottom-10 left-10 py-5 px-10 text-[11px] font-black flex items-center gap-3 z-20 bg-cyan-500 text-black rounded-2xl shadow-[0_0_40px_rgba(34,211,238,0.3)]"
             whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
             onClick={() =>
               router.push(`/quiz/${currentStep}?domain=${currentDomain}`)
             }
@@ -417,7 +388,6 @@ export default function MapPage() {
             </p>
             <RadarChart skills={radarSkills} />
           </div>
-
           <div className="rounded-[2.5rem] border border-white/5 bg-slate-950/60 p-8 flex-1 overflow-y-auto no-scrollbar shadow-xl">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-6">
               Objectifs Prioritaires
