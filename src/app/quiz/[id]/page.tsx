@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { AnimatePresence, motion } from "framer-motion"
@@ -31,7 +29,6 @@ export default function NexoraMultiWindowQuiz({
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  // Récupération dynamique du domaine depuis l'URL
   const domain = searchParams.get("domain") || "html"
 
   const [exercise, setExercise] = useState<any>(null)
@@ -40,7 +37,7 @@ export default function NexoraMultiWindowQuiz({
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [exerciseCount, setExerciseCount] = useState(1)
-  const [usedQuestions, setUsedQuestions] = useState<string[]>([]) // Historique pour éviter les doublons
+  const [usedQuestions, setUsedQuestions] = useState<string[]>([])
   const TOTAL_REQUIRED = 3
   const [showSuccessModal, setShowSuccessModal] = useState(false)
 
@@ -49,7 +46,6 @@ export default function NexoraMultiWindowQuiz({
     setIsCorrect(null)
     setSelectedOption(null)
     try {
-      // Transmission du domaine, du niveau et des questions à exclure
       const res = await fetch("/api/quiz", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,14 +53,14 @@ export default function NexoraMultiWindowQuiz({
           domain,
           level: exerciseId,
           type: "qcm",
-          exclude: currentUsedQuestions, // On envoie les questions déjà posées
+          exclude: currentUsedQuestions,
           seed: Math.random(),
         }),
       })
       const data = await res.json()
       if (data) {
         setExercise(data)
-        // On ajoute la nouvelle question à l'historique
+
         if (data.question) {
           setUsedQuestions((prev) => [...prev, data.question])
         }
@@ -76,7 +72,6 @@ export default function NexoraMultiWindowQuiz({
     }
   }
 
-  // Initialisation au montage
   useEffect(() => {
     fetchExercise([])
   }, [domain, exerciseId])
@@ -95,7 +90,6 @@ export default function NexoraMultiWindowQuiz({
 
       try {
         if (exerciseCount < TOTAL_REQUIRED) {
-          // Mise à jour de la progression intermédiaire
           await fetch("/api/user/progress", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -103,17 +97,16 @@ export default function NexoraMultiWindowQuiz({
               userId,
               xpToAdd: 50,
               nextStep: currentLevelInt,
-              domain: domain, // Correction : ajout du domaine
+              domain: domain,
             }),
           })
 
           setTimeout(() => {
             const newCount = exerciseCount + 1
             setExerciseCount(newCount)
-            fetchExercise([...usedQuestions]) // On passe l'historique actuel
+            fetchExercise([...usedQuestions])
           }, 1500)
         } else {
-          // Validation finale du niveau
           const res = await fetch("/api/user/progress", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -121,7 +114,7 @@ export default function NexoraMultiWindowQuiz({
               userId,
               xpToAdd: 150,
               nextStep: currentLevelInt + 1,
-              domain: domain, // Correction : ajout du domaine
+              domain: domain,
             }),
           })
 
@@ -190,7 +183,7 @@ export default function NexoraMultiWindowQuiz({
 
       <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 h-[calc(100vh-140px)]">
         <aside className="lg:col-span-3 flex flex-col gap-6 h-full">
-          <div className="flex-1 bg-slate-900/40 backdrop-blur-xl border border-cyan-500/20 rounded-[2rem] p-6 flex flex-col shadow-2xl">
+          <div className="flex-1 bg-slate-900/40 backdrop-blur-xl border border-cyan-500/20 rounded-4xl p-6 flex flex-col shadow-2xl">
             <span className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.2em] mb-4 italic">
               Mission / Quest
             </span>
@@ -271,7 +264,7 @@ export default function NexoraMultiWindowQuiz({
                 <h2 className="text-xl lg:text-3xl font-black uppercase italic tracking-tighter text-white leading-tight mb-6 drop-shadow-xl">
                   {displayQuestion}
                 </h2>
-                <div className="h-1 w-32 bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent mx-auto rounded-full" />
+                <div className="h-1 w-32 bg-linear-to-rrom-transparent via-cyan-500/40 to-transparent mx-auto rounded-full" />
               </div>
 
               <div className="grid grid-cols-1 gap-3 w-full max-w-md relative z-10">
@@ -328,7 +321,7 @@ export default function NexoraMultiWindowQuiz({
         </main>
 
         <aside className="lg:col-span-3 flex flex-col gap-6 h-full">
-          <div className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-6 h-1/2 flex flex-col shadow-xl">
+          <div className="bg-slate-900/40 border border-white/5 rounded-4xl p-6 h-1/2 flex flex-col shadow-xl">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 italic">
               Module Preview
             </span>
@@ -348,7 +341,7 @@ export default function NexoraMultiWindowQuiz({
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 rounded-[2rem] p-6 flex-1 relative overflow-hidden group shadow-2xl">
+          <div className="bg-linear-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 rounded-4xl p-6 flex-1 relative overflow-hidden group shadow-2xl">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
               <Bot size={80} />
             </div>
@@ -362,7 +355,7 @@ export default function NexoraMultiWindowQuiz({
                     Assistant Nexora
                   </span>
                   <span className="text-[8px] text-slate-500 uppercase font-bold tracking-widest opacity-60">
-                    — LEO-V3
+                    Nexora V3
                   </span>
                 </div>
               </div>
@@ -387,7 +380,7 @@ export default function NexoraMultiWindowQuiz({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[100] bg-[#050810]/95 backdrop-blur-2xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-100 bg-[#050810]/95 backdrop-blur-2xl flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.9, y: 30 }}
@@ -401,13 +394,13 @@ export default function NexoraMultiWindowQuiz({
                 Secteur Sécurisé
               </h2>
               <p className="text-emerald-400 font-black text-sm tracking-[0.4em] mb-10 drop-shadow-md">
-                +150 XP Gagné
+                +50 XP Gagné
               </p>
               <button
                 onClick={() => {
                   window.location.href = `/map?domain=${domain}&t=${Date.now()}`
                 }}
-                className="w-full py-6 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-2xl font-black text-[10px] uppercase tracking-widest text-black shadow-2xl group active:scale-95 transition-all"
+                className="w-full py-6 bg-linear-to-r from-cyan-500 to-purple-600 rounded-2xl font-black text-[10px] uppercase tracking-widest text-black shadow-2xl group active:scale-95 transition-all"
               >
                 Retour au Secteur {domain.toUpperCase()}{" "}
                 <ArrowRight

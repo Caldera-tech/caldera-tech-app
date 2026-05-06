@@ -46,3 +46,7 @@
 {"domain":"html","event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape en html. +50 XP. Nouveau step: 1.","reachedStep":1,"timestamp":"2026-05-06 08:43:30","userId":1,"xpGained":50}
 {"domain":"html","event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape en html. +50 XP. Nouveau step: 1.","reachedStep":1,"timestamp":"2026-05-06 08:43:49","userId":1,"xpGained":50}
 {"domain":"html","event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape en html. +150 XP. Nouveau step: 2.","reachedStep":2,"timestamp":"2026-05-06 08:43:54","userId":1,"xpGained":150}
+{"email":"bob@mail.com","event":"AUTH_LOGIN_SUCCESS","level":"info","message":"Pilote bob connecté avec succès.","timestamp":"2026-05-06 09:50:05","userId":1}
+{"domain":"javascript","event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape en javascript. +50 XP. Nouveau step: 1.","reachedStep":1,"timestamp":"2026-05-06 09:59:09","userId":1,"xpGained":50}
+{"domain":"javascript","event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape en javascript. +50 XP. Nouveau step: 1.","reachedStep":1,"timestamp":"2026-05-06 09:59:17","userId":1,"xpGained":50}
+{"domain":"javascript","event":"XP_UPDATE_SUCCESS","level":"info","message":"Audit : L'utilisateur 1 a validé une étape en javascript. +150 XP. Nouveau step: 2.","reachedStep":2,"timestamp":"2026-05-06 09:59:30","userId":1,"xpGained":150}
