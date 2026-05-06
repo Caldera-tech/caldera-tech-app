@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
+function getErrorMessage(error: unknown) {
+ return error instanceof Error ? error.message : "Erreur inconnue"
+}
+
 export async function GET() {
  try {
  const domains = [
@@ -40,7 +44,7 @@ export async function GET() {
  return NextResponse.json({
  message: "Système initialisé : Domaines créés.",
  })
- } catch (error: any) {
- return NextResponse.json({ error: error.message }, { status: 500 })
+ } catch (error: unknown) {
+ return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
  }
 }

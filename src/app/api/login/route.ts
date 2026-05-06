@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcrypt"
 import { NextResponse } from "next/server"
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Erreur inconnue"
+}
+
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json()
@@ -56,10 +60,10 @@ export async function POST(req: Request) {
         role: user.role,
       },
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error({
       event: "AUTH_SYSTEM_ERROR",
-      message: error.message,
+      message: getErrorMessage(error),
     })
 
     return NextResponse.json(

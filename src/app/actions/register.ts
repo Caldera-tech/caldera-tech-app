@@ -1,6 +1,11 @@
 "use server"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+
+function getErrorMessage(error: unknown) {
+ return error instanceof Error ? error.message : "Erreur inconnue"
+}
+
 export async function registerUser(formData: FormData) {
  const email = formData.get("email") as string
  const name = formData.get("name") as string
@@ -19,8 +24,8 @@ export async function registerUser(formData: FormData) {
  domainId: domain.id,
  },
  })
- } catch (error: any) {
- console.error("Erreur d'inscription:", error.message)
+ } catch (error: unknown) {
+ console.error("Erreur d'inscription:", getErrorMessage(error))
  return { error: "L'inscription a échoué." }
  }
  redirect("/dashboard")

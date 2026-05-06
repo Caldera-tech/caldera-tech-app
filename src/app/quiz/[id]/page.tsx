@@ -17,7 +17,17 @@ import {
 } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import * as React from "react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+
+type Exercise = {
+  question?: string
+  text?: string
+  mission?: string
+  options?: string[]
+  hint?: string
+  correctAnswers?: string[]
+  answers?: string[]
+}
 
 export default function NexoraMultiWindowQuiz({
   params,
@@ -31,7 +41,7 @@ export default function NexoraMultiWindowQuiz({
 
   const domain = searchParams.get("domain") || "html"
 
-  const [exercise, setExercise] = useState<any>(null)
+  const [exercise, setExercise] = useState<Exercise | null>(null)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
@@ -41,10 +51,7 @@ export default function NexoraMultiWindowQuiz({
   const TOTAL_REQUIRED = 3
   const [showSuccessModal, setShowSuccessModal] = useState(false)
 
-  const fetchExercise = async (currentUsedQuestions: string[]) => {
-    setLoading(true)
-    setIsCorrect(null)
-    setSelectedOption(null)
+  const fetchExercise = useCallback(async (currentUsedQuestions: string[]) => {
     try {
       const res = await fetch("/api/quiz", {
         method: "POST",
@@ -70,11 +77,17 @@ export default function NexoraMultiWindowQuiz({
     } finally {
       setLoading(false)
     }
-  }
+  }, [domain, exerciseId])
 
   useEffect(() => {
-    fetchExercise([])
-  }, [domain, exerciseId])
+    const userId = localStorage.getItem("userId")
+    if (!userId) {
+      router.push("/login")
+      return
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchExercise([])
+  }, [domain, exerciseId, fetchExercise, router])
 
   const handleSubmit = async () => {
     if (!selectedOption || !exercise) return
@@ -122,7 +135,7 @@ export default function NexoraMultiWindowQuiz({
             setTimeout(() => setShowSuccessModal(true), 800)
           }
         }
-      } catch (err) {
+      } catch {
         console.error("Échec de synchronisation orbitale")
       }
     }
@@ -192,7 +205,7 @@ export default function NexoraMultiWindowQuiz({
                 Reconstruction du Noyau
               </h3>
               <p className="text-[11px] text-slate-400 leading-relaxed italic">
-                "{exercise.mission || "Stabilisation des flux de données"}"
+                &quot;{exercise.mission || "Stabilisation des flux de données"}&quot;
               </p>
             </div>
             <div className="space-y-3 mt-4">
@@ -365,9 +378,9 @@ export default function NexoraMultiWindowQuiz({
                   className="text-cyan-500 absolute top-3 right-3 opacity-30"
                 />
                 <p className="text-[11px] text-slate-400 leading-relaxed italic">
-                  "
+                  &quot;
                   {exercise?.hint || "Vérifiez les protocoles dans la console."}
-                  "
+                  &quot;
                 </p>
               </div>
             </div>

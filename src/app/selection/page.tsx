@@ -6,7 +6,6 @@ import {
   Database,
   Layout,
   Palette,
-  Terminal,
   Zap,
   ChevronRight,
   ShieldCheck,
@@ -170,7 +169,7 @@ export default function SelectionPage() {
             </span>
           </h1>
           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4">
-            Choisissez un secteur d'opération pour commencer l'entraînement
+            Choisissez un secteur d&apos;opération pour commencer l&apos;entraînement
           </p>
         </div>
 

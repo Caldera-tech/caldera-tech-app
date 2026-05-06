@@ -106,7 +106,7 @@ export async function GET() {
       include: { domain: true, progress: true },
     })
     return NextResponse.json({ users })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Erreur lecture" }, { status: 500 })
   }
 }

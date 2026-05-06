@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Erreur inconnue"
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
@@ -41,8 +45,8 @@ export async function GET(req: Request) {
         progress: currentProgress,
       },
     })
-  } catch (error: any) {
-    console.error("Erreur Profile API:", error.message)
+  } catch (error: unknown) {
+    console.error("Erreur Profile API:", getErrorMessage(error))
     return NextResponse.json({ error: "Erreur liaison BDD" }, { status: 500 })
   }
 }
