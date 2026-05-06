@@ -30,6 +30,8 @@ export default function NexoraMultiWindowQuiz({
   const exerciseId = resolvedParams.id
   const searchParams = useSearchParams()
   const router = useRouter()
+
+  // Récupération dynamique du domaine depuis l'URL
   const domain = searchParams.get("domain") || "html"
 
   const [exercise, setExercise] = useState<any>(null)
@@ -38,14 +40,16 @@ export default function NexoraMultiWindowQuiz({
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [exerciseCount, setExerciseCount] = useState(1)
+  const [usedQuestions, setUsedQuestions] = useState<string[]>([]) // Historique pour éviter les doublons
   const TOTAL_REQUIRED = 3
   const [showSuccessModal, setShowSuccessModal] = useState(false)
 
-  const fetchExercise = async (count: number) => {
+  const fetchExercise = async (currentUsedQuestions: string[]) => {
     setLoading(true)
     setIsCorrect(null)
     setSelectedOption(null)
     try {
+      // Transmission du domaine, du niveau et des questions à exclure
       const res = await fetch("/api/quiz", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,11 +57,18 @@ export default function NexoraMultiWindowQuiz({
           domain,
           level: exerciseId,
           type: "qcm",
+          exclude: currentUsedQuestions, // On envoie les questions déjà posées
           seed: Math.random(),
         }),
       })
       const data = await res.json()
-      if (data) setExercise(data)
+      if (data) {
+        setExercise(data)
+        // On ajoute la nouvelle question à l'historique
+        if (data.question) {
+          setUsedQuestions((prev) => [...prev, data.question])
+        }
+      }
     } catch (err) {
       console.error("Erreur cockpit:", err)
     } finally {
@@ -65,8 +76,9 @@ export default function NexoraMultiWindowQuiz({
     }
   }
 
+  // Initialisation au montage
   useEffect(() => {
-    fetchExercise(1)
+    fetchExercise([])
   }, [domain, exerciseId])
 
   const handleSubmit = async () => {
@@ -83,6 +95,7 @@ export default function NexoraMultiWindowQuiz({
 
       try {
         if (exerciseCount < TOTAL_REQUIRED) {
+          // Mise à jour de la progression intermédiaire
           await fetch("/api/user/progress", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -90,14 +103,17 @@ export default function NexoraMultiWindowQuiz({
               userId,
               xpToAdd: 50,
               nextStep: currentLevelInt,
+              domain: domain, // Correction : ajout du domaine
             }),
           })
 
           setTimeout(() => {
-            setExerciseCount((prev) => prev + 1)
-            fetchExercise(exerciseCount + 1)
+            const newCount = exerciseCount + 1
+            setExerciseCount(newCount)
+            fetchExercise([...usedQuestions]) // On passe l'historique actuel
           }, 1500)
         } else {
+          // Validation finale du niveau
           const res = await fetch("/api/user/progress", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -105,6 +121,7 @@ export default function NexoraMultiWindowQuiz({
               userId,
               xpToAdd: 150,
               nextStep: currentLevelInt + 1,
+              domain: domain, // Correction : ajout du domaine
             }),
           })
 
@@ -123,7 +140,7 @@ export default function NexoraMultiWindowQuiz({
     exercise?.question ||
     exercise?.text ||
     exercise?.mission ||
-    "Initialisation..."
+    "Analyse radar en cours..."
 
   if (loading || !exercise)
     return (
@@ -147,7 +164,7 @@ export default function NexoraMultiWindowQuiz({
           </button>
           <div>
             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-              Pilot: Sync Mode
+              Secteur: {domain.toUpperCase()}
             </p>
             <div className="w-32 h-1.5 bg-slate-800 rounded-full mt-1 overflow-hidden">
               <motion.div
@@ -161,12 +178,12 @@ export default function NexoraMultiWindowQuiz({
           </div>
         </div>
         <h2 className="text-xl lg:text-2xl font-black uppercase italic tracking-tighter text-white">
-          Level {exerciseId}: {domain.toUpperCase()} Protocol
+          Level {exerciseId}: Protocole {domain.toUpperCase()}
         </h2>
         <div className="flex items-center gap-3 bg-slate-900/80 p-2 px-4 rounded-xl border border-white/5 backdrop-blur-md">
           <ShieldCheck size={16} className="text-emerald-500" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            Stability: 100%
+            Stabilité: 100%
           </span>
         </div>
       </header>
@@ -179,20 +196,20 @@ export default function NexoraMultiWindowQuiz({
             </span>
             <div className="mb-6">
               <h3 className="text-sm font-black uppercase text-white mb-2 leading-tight">
-                Rebuild the core module
+                Reconstruction du Noyau
               </h3>
               <p className="text-[11px] text-slate-400 leading-relaxed italic">
-                "{exercise.mission || "Stabilisation des protocoles"}"
+                "{exercise.mission || "Stabilisation des flux de données"}"
               </p>
             </div>
             <div className="space-y-3 mt-4">
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-4">
-                Objectives
+                Objectifs
               </span>
               {[
                 "Analyser le fragment",
-                "Identifier les balises",
-                "Restaurer le noyau",
+                "Identifier les paramètres",
+                "Restaurer le module",
               ].map((obj, i) => (
                 <div
                   key={i}
@@ -288,7 +305,7 @@ export default function NexoraMultiWindowQuiz({
 
             <div className="p-5 border-t border-white/5 bg-slate-950/40 flex gap-4 shrink-0 relative z-10 backdrop-blur-sm">
               <button
-                onClick={() => fetchExercise(exerciseCount)}
+                onClick={() => fetchExercise(usedQuestions)}
                 className="p-4 bg-slate-800 border border-white/10 rounded-2xl hover:bg-slate-700 text-slate-400 hover:text-white transition-all shadow-inner"
               >
                 <RotateCcw size={20} />
@@ -296,14 +313,14 @@ export default function NexoraMultiWindowQuiz({
               <button
                 onClick={handleSubmit}
                 disabled={!selectedOption || isSubmitting || isCorrect === true}
-                className={`flex-1 py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl ${isCorrect ? "bg-emerald-500 text-white" : "bg-cyan-500 text-black hover:bg-cyan-400"} disabled:opacity-20`}
+                className={`flex-1 py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl ${isCorrect ? "bg-emerald-500 text-white" : "bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.4)]"} disabled:opacity-20`}
               >
                 {isSubmitting ? (
                   <Loader2 className="animate-spin mx-auto" size={18} />
                 ) : isCorrect ? (
-                  "Protocol Restored"
+                  "Séquence Stabilisée"
                 ) : (
-                  "Submit Solution"
+                  "Soumettre Solution"
                 )}
               </button>
             </div>
@@ -324,6 +341,9 @@ export default function NexoraMultiWindowQuiz({
                 <p className="text-[10px] font-bold text-slate-600 uppercase italic leading-tight">
                   Status: {isCorrect ? "Online" : "Offline"}
                 </p>
+                <p className="text-[8px] text-slate-800 uppercase mt-2 font-black">
+                  Data Sync {domain.toUpperCase()}
+                </p>
               </div>
             </div>
           </div>
@@ -339,10 +359,10 @@ export default function NexoraMultiWindowQuiz({
                 </div>
                 <div>
                   <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest block italic">
-                    Nexora Assistant
+                    Assistant Nexora
                   </span>
                   <span className="text-[8px] text-slate-500 uppercase font-bold tracking-widest opacity-60">
-                    — NEXORA V3
+                    — LEO-V3
                   </span>
                 </div>
               </div>
@@ -352,7 +372,9 @@ export default function NexoraMultiWindowQuiz({
                   className="text-cyan-500 absolute top-3 right-3 opacity-30"
                 />
                 <p className="text-[11px] text-slate-400 leading-relaxed italic">
-                  "{exercise?.hint || "Vérifiez les protocoles."}"
+                  "
+                  {exercise?.hint || "Vérifiez les protocoles dans la console."}
+                  "
                 </p>
               </div>
             </div>
@@ -376,10 +398,10 @@ export default function NexoraMultiWindowQuiz({
                 <Sparkles size={40} className="text-cyan-400" />
               </div>
               <h2 className="text-4xl font-black uppercase tracking-tighter mb-2 italic mt-6 text-white drop-shadow-lg">
-                Niveau Complet
+                Secteur Sécurisé
               </h2>
               <p className="text-emerald-400 font-black text-sm tracking-[0.4em] mb-10 drop-shadow-md">
-                +50 XP Gagné
+                +150 XP Gagné
               </p>
               <button
                 onClick={() => {
@@ -387,7 +409,7 @@ export default function NexoraMultiWindowQuiz({
                 }}
                 className="w-full py-6 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-2xl font-black text-[10px] uppercase tracking-widest text-black shadow-2xl group active:scale-95 transition-all"
               >
-                Continue le niveau suivant{" "}
+                Retour au Secteur {domain.toUpperCase()}{" "}
                 <ArrowRight
                   size={16}
                   className="inline ml-2 group-hover:translate-x-2 transition-transform"

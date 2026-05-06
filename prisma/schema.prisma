@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── DOMAINES DE RÉFÉRENCE ──────────────────────────────────────────────────
 model Domain {
   id          Int      @id @default(autoincrement())
   slug        String   @unique
@@ -16,6 +17,7 @@ model Domain {
   createdAt   DateTime @default(now())
 }
 
+// ─── UTILISATEURS ───────────────────────────────────────────────────────────
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -27,13 +29,17 @@ model User {
 
   // Relations
   domainId  Int
-  domain    Domain   @relation(fields: [domainId], references: [id])
-  progress  Progress?
+  domain    Domain     @relation(fields: [domainId], references: [id])
+
+  // MODIFICATION : Utilisation de Progress[] (Tableau) pour autoriser
+  // plusieurs lignes de progression par utilisateur (HTML, CSS, JS...)
+  progress  Progress[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+// ─── PROGRESSION PAR SECTEUR ────────────────────────────────────────────────
 model Progress {
   id            Int      @id @default(autoincrement())
   currentStep   Int      @default(1)
@@ -41,7 +47,16 @@ model Progress {
   completed     Boolean  @default(false)
   lastActivity  DateTime @default(now()) @updatedAt
 
-  // Relation 1-to-1 stricte avec l'utilisateur
-  userId        Int      @unique
+  // IDENTIFICATION DU SECTEUR
+  // Permet de séparer les niveaux (ex: HTML niveau 4, CSS niveau 1)
+  domain        String   @default("html")
+
+  // RELATION AVEC L'UTILISATEUR
+  userId        Int
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // CONTRAINTE D'UNICITÉ COMPOSÉE
+  // Empêche d'avoir deux lignes HTML pour le même utilisateur.
+  // Génère automatiquement l'index "userId_domain" pour les requêtes upsert.
+  @@unique([userId, domain])
 }
